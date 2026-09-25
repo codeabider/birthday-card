@@ -5,6 +5,7 @@ const PROGRESS_KEY = 'birthday-card-flow-v1';
 const UNLOCK_KEY = 'birthday-card-unlocked-v1';
 
 export const FLOW_CONTEXT = Symbol('birthday-card-flow');
+export const NAVIGATION_CONTEXT = Symbol('birthday-card-navigation');
 
 export const FLOW_ROUTES = [
 	{ id: 'gate', path: '/', label: 'Timer' },

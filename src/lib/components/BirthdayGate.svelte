@@ -1,11 +1,11 @@
 <script>
 	import {onDestroy, onMount, untrack} from 'svelte';
 
-	let {onReady, initiallyComplete = false} = $props();
+	let {onReady, initiallyComplete = false, onAutoProceed} = $props();
 
 	// ⚠️  Set the birthday date here (UTC).
-	// const birthdayTimestamp = new Date('2026-10-01T00:00:00Z').getTime();
-	const birthdayTimestamp = Date.now() + (10 * 1000);
+	const birthdayTimestamp = new Date('2026-10-01T00:00:00Z').getTime();
+	// const birthdayTimestamp = Date.now() + (10 * 1000);
 	const completeAtStart = untrack(() => initiallyComplete);
 
 	let unlocked = $state(completeAtStart);
@@ -17,12 +17,14 @@
 	let intervalId = null;
 	let introTimeout;
 	let unlockTimeout;
+	let advanceTimeout;
 
 	function scheduleReady() {
 		if (unlockNotified) return;
 		unlockNotified = true;
 		unlocked = true;
 		unlockTimeout = setTimeout(() => onReady?.(), 1200);
+		advanceTimeout = setTimeout(() => onAutoProceed?.(), 3000);
 	}
 
 	function countUp() {
@@ -70,6 +72,7 @@
 		intervalId && clearInterval(intervalId);
 		introTimeout && clearTimeout(introTimeout);
 		unlockTimeout && clearTimeout(unlockTimeout);
+		advanceTimeout && clearTimeout(advanceTimeout);
 	});
 </script>
 
