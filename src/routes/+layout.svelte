@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
+	import { fade } from 'svelte/transition';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { createFlow, FLOW_CONTEXT, NAVIGATION_CONTEXT } from '$lib/flow.svelte.js';
 
@@ -12,6 +13,7 @@
 	setContext(NAVIGATION_CONTEXT, { advance });
 
 	let navigating = $state(false);
+	let motionDur = $state(560);
 	let previousUserSelect = '';
 	let path = $derived.by(() => {
 		const trailing = page.url.pathname.replace(/\/+$/, '') || '/';
@@ -141,6 +143,7 @@ function scheduleFaller() {
 	onMount(() => {
 		window.addEventListener('pointerdown', onPointerDown, true);
 		scheduleFaller();
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) motionDur = 0;
 	});
 
 	onDestroy(() => {
@@ -165,7 +168,11 @@ function scheduleFaller() {
 	<title>Namita's special day</title>
 </svelte:head>
 
-{@render children()}
+{#key path}
+	<div class="screen-fade" in:fade={{ duration: motionDur }} out:fade={{ duration: motionDur * 0.55 }}>
+		{@render children()}
+	</div>
+{/key}
 
 {#if fallers.length && currentRoute?.id !== 'system'}
 	<div class="faller-layer" aria-hidden="true">

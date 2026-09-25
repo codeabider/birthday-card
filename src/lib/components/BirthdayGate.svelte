@@ -5,7 +5,7 @@
 
 	// ⚠️  Set the birthday date here (UTC). 01 Oct 2026 00:00 IST = 30 Sep 2026 18:30 UTC.
 	const birthdayTimestamp = new Date('2026-10-01T00:00:00+05:30').getTime();
-	// const birthdayTimestamp = Date.now() + (5 * 1000); // test timer — never commit!
+	// const birthdayTimestamp = Date.now() + (5 * 1000); // test timer — never commit! (LOCAL TEST)
 	const completeAtStart = untrack(() => initiallyComplete);
 
 	let unlocked = $state(completeAtStart);
@@ -14,8 +14,6 @@
 	let timeLeft = $state(0);
 	let totalMs = 0;
 	let stars = $state([]);
-	let floatingParticles = $state([]);
-	let treatFloaters = $state([]);
 	let burst = $state([]);
 	const burstPalette = ['#ff6b9d','#ffb347','#7ae0ff','#9b7bff','#7dffb0','#f4d5c8','#ff477e'];
 	let introDone = $state(false);
@@ -23,16 +21,13 @@
 	let introTimeout;
 	let unlockTimeout;
 	let advanceTimeout;
+	let rafId = 0;
 
-	let frac = $derived(totalMs > 0 ? Math.min(timeLeft / totalMs, 1) : 0);
-	let glowDur = $derived(`${(1.2 + 2.8 * frac).toFixed(2)}s`);
-	let taglineText = $derived(
-		timeLeft >= 864e5
-			? 'something warm is brewing'
-			: timeLeft >= 36e5
-				? 'get ready'
-				: 'almost here'
-	);
+	let frac = $state(1);
+	let hot = $state(false);
+	let glowDur = $state('2.00s');
+	let liquidPct = $state('16.000vh');
+	let taglineText = $state('something warm is brewing');
 
 	function makeBurst() {
 		const parts = [];
@@ -59,9 +54,15 @@
 		if (unlockNotified) return;
 		unlockNotified = true;
 		unlocked = true;
+		if (typeof cancelAnimationFrame === 'function' && rafId) cancelAnimationFrame(rafId);
+		rafId = 0;
+		frac = 0;
+		hot = false;
+		liquidPct = '80.000vh';
 		makeBurst();
 		unlockTimeout = setTimeout(() => onReady?.(), 1200);
-		advanceTimeout = setTimeout(() => onAutoProceed?.(), 3000);
+		startDrain();
+		advanceTimeout = setTimeout(() => onAutoProceed?.(), 5300);
 	}
 
 	function countUp() {
@@ -70,6 +71,9 @@
 		if (left <= 0) {
 			intervalId && clearInterval(intervalId);
 			intervalId = null;
+			frac = 0;
+			hot = false;
+			liquidPct = '80.000vh';
 			countdown = {days:'00',hours:'00',minutes:'00',seconds:'00'};
 			scheduleReady();
 			return;
@@ -86,6 +90,36 @@
 		};
 	}
 
+	function tickFill() {
+		const left = Math.max(birthdayTimestamp - Date.now(), 0);
+		const span = Math.max(totalMs, 1);
+		frac = Math.min(left / span, 1);
+		hot = frac < 0.2;
+		liquidPct = `${Math.max(80 * (1 - frac), 16).toFixed(3)}vh`;
+		glowDur = `${(1.2 + 2.8 * frac).toFixed(2)}s`;
+		taglineText =
+			left >= 864e5
+				? 'something warm is brewing'
+				: left >= 36e5
+					? 'get ready'
+					: 'almost here';
+		if (left > 0 && !unlocked && typeof requestAnimationFrame === 'function') {
+			rafId = requestAnimationFrame(tickFill);
+		}
+	}
+
+	function startDrain() {
+		if (typeof requestAnimationFrame !== 'function') return;
+		const t0 = performance.now();
+		const DRAIN_MS = 4800;
+		function step(now) {
+			const t = Math.min((now - t0) / DRAIN_MS, 1);
+			liquidPct = `${(80 - 70 * t).toFixed(3)}vh`;
+			if (t < 1) rafId = requestAnimationFrame(step);
+		}
+		rafId = requestAnimationFrame(step);
+	}
+
 	onMount(() => {
 		stars = Array.from({length: 90}, () => ({
 			x: Math.random()*100, y: Math.random()*100,
@@ -94,28 +128,17 @@
 			dr: (3+Math.random()*6).toFixed(2),
 		}));
 
-		floatingParticles = Array.from({length: 10}, () => ({
-			x: Math.random()*100,
-			dl: (Math.random()*3).toFixed(2),
-			dr: (5+Math.random()*8).toFixed(2),
-		}));
-
-		treatFloaters = Array.from({length: 7}, () => ({
-			x: Math.random()*100,
-			emoji: Math.random() > 0.5 ? '☕' : '🍫',
-			dl: (Math.random()*6).toFixed(2),
-			dr: (16 + Math.random()*12).toFixed(2),
-		}));
-
 		introTimeout = setTimeout(() => { introDone = true; }, 500);
-		if (completeAtStart) { totalMs = 1; timeLeft = 0; makeBurst(); return; }
+		if (completeAtStart) { totalMs = 1; timeLeft = 0; liquidPct = '80.000vh'; makeBurst(); return; }
 		totalMs = Math.max(birthdayTimestamp - Date.now(), 1);
 		countUp();
 		if (!unlocked) intervalId = setInterval(countUp, 1000);
+		if (typeof requestAnimationFrame === 'function') rafId = requestAnimationFrame(tickFill);
 	});
 
 	onDestroy(() => {
 		intervalId && clearInterval(intervalId);
+		if (typeof cancelAnimationFrame === 'function' && rafId) cancelAnimationFrame(rafId);
 		introTimeout && clearTimeout(introTimeout);
 		unlockTimeout && clearTimeout(unlockTimeout);
 		advanceTimeout && clearTimeout(advanceTimeout);
@@ -123,20 +146,22 @@
 </script>
 
 {#if !unlocked}
-<div class="gate" role="status">
-	{#each stars as st}
-		<span class="star" style="--x:{st.x}%;--y:{st.y}%;width:{st.sz}px;height:{st.sz}px;--delay:{st.dl}s;--dur:{st.dr}s;"></span>
-	{/each}
+<div class="gate {hot ? 'hot' : ''}" role="status" aria-label="a mug of coffee held close — froth on top, warm brew below">
+	<div class="scene" aria-hidden="true">
+		<div class="space">
+			{#each stars as st}
+				<span class="star" style="--x:{st.x}%;--y:{st.y}%;width:{st.sz}px;height:{st.sz}px;--delay:{st.dl}s;--dur:{st.dr}s;"></span>
+			{/each}
+		</div>
+		<div class="mug">
+			<div class="liquid" style="height:{liquidPct};">
+				<div class="froth"></div>
+				<div class="coffee"><span class="sheen"></span></div>
+			</div>
+		</div>
+	</div>
 
-	{#each floatingParticles as fp}
-		<span class="floater" style="--x:{fp.x}%;--delay:{fp.dl}s;--dur:{fp.dr}s;"></span>
-	{/each}
-
-	{#each treatFloaters as t}
-		<span class="treat" style="--x:{t.x}%;--delay:{t.dl}s;--dur:{t.dr}s;">{t.emoji}</span>
-	{/each}
-
-	<div class="content {introDone ? 'show' : ''}">
+	<div class="content lock {introDone ? 'show' : ''}">
 		<p class="tagline">{#key taglineText}<span class="tag-swap">{taglineText}</span>{/key}</p>
 
 		<div class="countdown">
@@ -164,10 +189,21 @@
 </div>
 {:else}
 <div class="gate unlock-out">
+	<div class="scene" aria-hidden="true">
+		<div class="space">
+			{#each stars as st}
+				<span class="star" style="--x:{st.x}%;--y:{st.y}%;width:{st.sz}px;height:{st.sz}px;--delay:{st.dl}s;--dur:{st.dr}s;"></span>
+			{/each}
+		</div>
+		<div class="mug">
+			<div class="liquid" style="height:{liquidPct};">
+				<div class="froth"></div>
+				<div class="coffee"><span class="sheen"></span></div>
+			</div>
+		</div>
+	</div>
+
 	<span class="burst-flash"></span>
-	{#each stars as st}
-		<span class="star" style="--x:{st.x}%;--y:{st.y}%;width:{st.sz}px;height:{st.sz}px;--delay:{st.dl}s;--dur:{st.dr}s;"></span>
-	{/each}
 
 	{#each burst as pt}
 		<span
@@ -187,7 +223,24 @@
 	.gate {
 		position: fixed; inset: 0;
 		display: flex; align-items: center; justify-content: center;
-		background: radial-gradient(ellipse at 50% 40%, #1e1230 0%, #0a0812 75%);
+		background:
+			radial-gradient(ellipse at 50% 22%, rgba(255,214,160,0.06), transparent 44%),
+			linear-gradient(180deg, #07060c 0%, #0b0913 45%, #0f0b12 100%);
+		overflow: hidden;
+	}
+
+	.gate::after {
+		content: '';
+		position: absolute; inset: 0;
+		box-shadow: inset 0 0 110px rgba(0,0,0,0.5);
+		pointer-events: none;
+		z-index: 4;
+	}
+
+	.scene { position: absolute; inset: 0; }
+
+	.space {
+		position: absolute; left: 0; right: 0; top: 0; height: 30%;
 		overflow: hidden;
 	}
 
@@ -202,25 +255,89 @@
 		50% { opacity: 0.45; }
 	}
 
-	.floater {
-		position: absolute; left: var(--x); top: 110%;
-		width: 3px; height: 3px;
-		background: rgba(255,218,197,0.15); border-radius: 50%;
-		animation: flu var(--dur) ease-out infinite var(--delay);
+	.mug {
+		position: absolute; inset: 0;
+		transform-origin: 50% 100%;
+		animation: mugSlosh 5.5s ease-in-out infinite;
+		will-change: transform;
 	}
 
-	@keyframes flu {
-		0% { transform: translateY(0); opacity: 0.3; }
-		60% { opacity: 0.12; }
-		100% { transform: translateY(-120vh); opacity: 0; }
+	.liquid {
+		position: absolute; left: -5%; right: -5%; bottom: -5%;
 	}
 
-	.treat {
-		position: absolute; left: var(--x); top: 110%;
-		font-size: 1.1rem; opacity: 0;
-		animation: flu var(--dur) ease-out infinite var(--delay);
-		filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+	@keyframes mugSlosh {
+		0%   { transform: rotate(0deg); }
+		18%  { transform: rotate(-1.4deg); }
+		38%  { transform: rotate(1.1deg); }
+		55%  { transform: rotate(-0.7deg); }
+		70%  { transform: rotate(0.5deg); }
+		82%  { transform: rotate(-0.2deg); }
+		100% { transform: rotate(0deg); }
 	}
+
+	.froth {
+		position: absolute; left: 0; right: 0; top: 0; height: 20%;
+		background: linear-gradient(180deg, #f6e7cb 0%, #eed9b4 40%, #e2c595 100%);
+		box-shadow: inset 0 14px 20px rgba(120,80,40,0.16), inset 0 -8px 16px rgba(90,55,25,0.18);
+	}
+
+	.froth::before {
+		content: '';
+		position: absolute; left: -40px; right: -40px; top: -7px; height: 26px;
+		background:
+			radial-gradient(circle at 24px 20px, #f6e7cb 0 9px, transparent 9.5px),
+			radial-gradient(circle at 68px 26px, #ecd6b0 0 12px, transparent 12.5px),
+			radial-gradient(circle at 112px 20px, #f6e7cb 0 8px, transparent 8.5px),
+			radial-gradient(circle at 156px 24px, #e9d3ab 0 11px, transparent 11.5px),
+			radial-gradient(circle at 200px 20px, #f6e7cb 0 9px, transparent 9.5px);
+		background-repeat: repeat-x;
+		background-size: 224px 36px;
+		will-change: background-position, transform;
+		animation: foamWave 5.5s ease-in-out infinite;
+	}
+
+	@keyframes foamWave {
+		0%   { background-position-x: 0;     transform: translateY(0)    rotate(-0.6deg); }
+		30%  { background-position-x: 12px;  transform: translateY(-2px) rotate(0deg); }
+		50%  { background-position-x: 20px;  transform: translateY(-3px) rotate(0.7deg); }
+		70%  { background-position-x: 10px;  transform: translateY(-2px) rotate(0.4deg); }
+		100% { background-position-x: 0;     transform: translateY(0)    rotate(-0.6deg); }
+	}
+
+	.coffee {
+		position: absolute; left: 0; right: 0; top: 20%; bottom: 0;
+		background:
+			radial-gradient(ellipse at 50% 6%, rgba(140,80,40,0.35), transparent 36%),
+			radial-gradient(ellipse at 22% 38%, rgba(235,215,182,0.11), transparent 28%),
+			radial-gradient(ellipse at 76% 20%, rgba(235,215,182,0.09), transparent 26%),
+			radial-gradient(ellipse at 16% 92%, rgba(0,0,0,0.55), transparent 52%),
+			radial-gradient(ellipse at 84% 94%, rgba(0,0,0,0.5), transparent 52%),
+			linear-gradient(180deg, #2e1706 0%, #201001 38%, #150a02 70%, #0d0601 100%);
+		box-shadow: inset 0 -26px 42px rgba(0,0,0,0.5);
+	}
+
+	.coffee::before {
+		content: '';
+		position: absolute; left: 0; right: 0; top: 0; height: 4px;
+		background: linear-gradient(180deg, rgba(120,82,44,0.8), rgba(120,82,44,0));
+	}
+
+	.coffee .sheen {
+		position: absolute; left: 0; right: 0; top: -2px; height: 30px;
+		background: radial-gradient(ellipse at 50% 0%, rgba(255,214,160,0.3), transparent 62%);
+		filter: blur(3px);
+		animation: sheenGlint 6s ease-in-out infinite;
+	}
+
+	@keyframes sheenGlint {
+		0%,100% { opacity: 0.4; transform: translateX(-2.5%) scaleX(0.98); }
+		50% { opacity: 0.8; transform: translateX(2.5%) scaleX(1.02); }
+	}
+
+	.hot .mug { animation-duration: 3.4s; }
+	.hot .froth::before { animation-duration: 3.4s; }
+	.hot .coffee .sheen { animation-duration: 2.4s; }
 
 	.content {
 		position: relative; z-index: 2; text-align: center;
@@ -229,7 +346,22 @@
 		transition: opacity 1.4s ease, transform 1.4s ease;
 	}
 
+	.content.lock {
+		position: absolute; left: 0; right: 0; top: 0; height: 30%;
+		justify-content: center;
+	}
+
 	.content.show { opacity: 1; transform: translateY(0); }
+
+	.content::before {
+		content: '';
+		position: absolute;
+		inset: -30% -10%;
+		z-index: -1;
+		border-radius: 50%;
+		background: radial-gradient(ellipse at center, rgba(10,7,14,0.55), transparent 72%);
+		filter: blur(16px);
+	}
 
 	.burst-flash {
 		position: absolute;
@@ -285,7 +417,8 @@
 
 	.tagline {
 		font-family: 'Playfair Display', Georgia, serif; font-style: italic;
-		font-size: clamp(1.6rem,7vw,2.4rem); color: #f4d5c8;
+		font-size: clamp(1.6rem,7vw,2.4rem); color: #f8e0c0;
+		text-shadow: 0 2px 18px rgba(20,8,3,0.6);
 	}
 
 	.tag-swap {
@@ -308,14 +441,14 @@
 		min-width: clamp(40px,11vw,56px);
 		padding: 0.8rem 0.35rem 0.7rem;
 		border-radius: 14px;
-		background: linear-gradient(180deg, rgba(30,18,48,0.85), rgba(12,8,22,0.85));
+		background: linear-gradient(180deg, rgba(28,17,10,0.78), rgba(16,9,5,0.78));
 		border: 1px solid rgba(244,213,200,0.16);
 		box-shadow: 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(244,213,200,0.07);
 	}
 
 	.num {
 		font-weight: 300; font-size: clamp(1.6rem,6.5vw,2.2rem);
-		color: rgba(244,213,200,0.92); letter-spacing: 0.06em;
+		color: rgba(248,224,192,0.92); letter-spacing: 0.06em;
 		perspective: 300px;
 	}
 
@@ -343,11 +476,11 @@
 	}
 
 	.glow {
-		position: absolute; top: 40%; left: 50%;
-		width: 120px; height: 120px;
-		margin: -60px 0 0 -60px;
+		position: absolute; top: 24%; left: 50%;
+		width: 150px; height: 150px;
+		margin: -75px 0 0 -75px;
 		border-radius: 50%;
-		background: radial-gradient(circle, rgba(244,200,180,0.07) 0%, transparent 70%);
+		background: radial-gradient(circle, rgba(255,214,160,0.1) 0%, transparent 70%);
 		animation: glwP var(--pdur, 4s) ease-in-out infinite;
 	}
 
@@ -363,8 +496,12 @@
 		.tagline.time-up,
 		.burst-flash,
 		.burst,
-		.treat,
-		.glow {
+		.star,
+		.glow,
+		.mug,
+		.froth,
+		.froth::before,
+		.coffee .sheen {
 			animation: none;
 		}
 		.burst, .burst-flash { opacity: 0; }
