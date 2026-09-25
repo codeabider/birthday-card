@@ -41,7 +41,8 @@
 
 	const titleWords = [
 		{ text: 'happy', gold: false },
-		{ text: 'birthday.', gold: true },
+		{ text: 'birthday', gold: false },
+		{ text: 'Namita', gold: true },
 	];
 
 	const wishLines = [
@@ -139,7 +140,7 @@
 		height: 62vmin;
 		top: -18vmin;
 		left: -12vmin;
-		background: radial-gradient(circle, rgba(244,200,180,0.16) 0%, transparent 62%);
+		background: radial-gradient(circle, rgba(238,208,164,0.17) 0%, rgba(200,140,90,0.06) 55%, transparent 62%);
 		animation: au1 11s ease-in-out infinite alternate;
 	}
 
@@ -195,14 +196,14 @@
 		height: min(56px, 14vw);
 		border-radius: 50%;
 		transform: translate(-50%, -50%);
-		background: radial-gradient(circle at 32% 32%, #ffe8dd 0%, #f4c9b7 50%, #d8aead 100%);
-		box-shadow: 0 0 34px 8px rgba(244,200,180,0.22), 0 0 90px 18px rgba(244,200,180,0.08);
+		background: radial-gradient(circle at 32% 32%, #f7dfb4 0%, #d8a36e 50%, #a9744f 100%);
+		box-shadow: 0 0 34px 10px rgba(230,178,120,0.26), 0 0 90px 20px rgba(200,140,90,0.12);
 		transition: transform 2s ease, box-shadow 2s ease;
 	}
 
 	.orb.big {
 		transform: translate(-50%, -50%) scale(1.55);
-		box-shadow: 0 0 50px 16px rgba(244,200,180,0.34), 0 0 110px 32px rgba(244,200,180,0.14);
+		box-shadow: 0 0 50px 18px rgba(235,180,120,0.38), 0 0 110px 34px rgba(200,140,90,0.16);
 	}
 
 	.ring {

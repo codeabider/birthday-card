@@ -8,6 +8,7 @@
 	const feelings = [
 		{text: 'I want something lovely', gift: {title: 'a gentle reminder', body: 'you are allowed to take up space. you always have been.'}},
 		{text: 'I need a little encouragement', gift: {title: 'truth for today', body: 'the things you survive become the things you understand. and that makes you rare.'}},
+		{text: 'I want something delicious', gift: {title: 'a perfect blend', body: 'your day is one part dark chocolate, one part slow coffee, and everything else is all you — honestly, that ratio is perfect.'}},
 		{text: 'Make me laugh', gift: {title: 'a scientific fact', body: 'plutonium glows. so does your screen right now. you are in the presence of glow.'}},
 		{text: 'I want something peaceful', gift: {title: 'stillness', body: 'nothing has to happen for the next minute, and the world will keep spinning without help.'}},
 		{text: 'Surprise me', gift: {title: 'a prediction', body: 'three months from now you will think back to today and smile.'}},

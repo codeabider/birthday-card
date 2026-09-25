@@ -4,7 +4,7 @@
 
 	const flow = getFlow();
 	const initialChoices = Object.fromEntries(
-		Object.entries(flow.choices).filter(([key, value]) => ['s0', 's1', 's2'].includes(key) && Number.isInteger(value) && value >= 0 && value < 3),
+		Object.entries(flow.choices).filter(([key, value]) => ['s0', 's1', 's2', 's3'].includes(key) && Number.isInteger(value) && value >= 0 && value < 4),
 	);
 </script>
 

@@ -3,6 +3,7 @@ import { getContext } from 'svelte';
 
 const PROGRESS_KEY = 'birthday-card-flow-v1';
 const UNLOCK_KEY = 'birthday-card-unlocked-v1';
+const PLAN_KEY = 'birthday-card-plan-v1';
 
 export const FLOW_CONTEXT = Symbol('birthday-card-flow');
 export const NAVIGATION_CONTEXT = Symbol('birthday-card-navigation');
@@ -27,6 +28,13 @@ export function createFlow() {
 	function hydrate() {
 		if (!browser) return;
 		try {
+			const savedPlan = sessionStorage.getItem(PLAN_KEY);
+			if (savedPlan) {
+				const parsed = JSON.parse(savedPlan);
+				if (parsed && ['s0', 's1', 's2', 's3'].every((key) => Number.isInteger(parsed[key]))) {
+					choices = { ...parsed };
+				}
+			}
 			sessionStorage.removeItem(PROGRESS_KEY);
 			wholeViewed = sessionStorage.getItem(UNLOCK_KEY) === '1';
 		} catch {
@@ -58,7 +66,13 @@ export function createFlow() {
 
 	function setChoices(value) {
 		choices = { ...value };
-		const completeChoices = ['s0', 's1', 's2'].every((key) => Number.isInteger(choices[key]));
+		try {
+			if (!browser) throw new Error('no browser');
+			sessionStorage.setItem(PLAN_KEY, JSON.stringify(choices));
+		} catch {
+			// non-fatal: plan just won't survive a reload
+		}
+		const completeChoices = ['s0', 's1', 's2', 's3'].every((key) => Number.isInteger(choices[key]));
 		completed = completeChoices
 			? [...new Set([...completed, 'choose'])]
 			: completed.filter((id) => id !== 'choose');

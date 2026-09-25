@@ -3,8 +3,8 @@
 
 	let {onReady, initiallyComplete = false, onAutoProceed} = $props();
 
-	// ⚠️  Set the birthday date here (UTC).
-	const birthdayTimestamp = new Date('2026-10-01T00:00:00Z').getTime();
+	// ⚠️  Set the birthday date here (UTC). 01 Oct 2026 00:00 IST = 30 Sep 2026 18:30 UTC.
+	const birthdayTimestamp = new Date('2026-10-01T00:00:00+05:30').getTime();
 	// const birthdayTimestamp = Date.now() + (5 * 1000); // test timer — never commit!
 	const completeAtStart = untrack(() => initiallyComplete);
 
@@ -15,6 +15,7 @@
 	let totalMs = 0;
 	let stars = $state([]);
 	let floatingParticles = $state([]);
+	let treatFloaters = $state([]);
 	let burst = $state([]);
 	const burstPalette = ['#ff6b9d','#ffb347','#7ae0ff','#9b7bff','#7dffb0','#f4d5c8','#ff477e'];
 	let introDone = $state(false);
@@ -27,7 +28,7 @@
 	let glowDur = $derived(`${(1.2 + 2.8 * frac).toFixed(2)}s`);
 	let taglineText = $derived(
 		timeLeft >= 864e5
-			? 'something is coming'
+			? 'something warm is brewing'
 			: timeLeft >= 36e5
 				? 'get ready'
 				: 'almost here'
@@ -99,6 +100,13 @@
 			dr: (5+Math.random()*8).toFixed(2),
 		}));
 
+		treatFloaters = Array.from({length: 7}, () => ({
+			x: Math.random()*100,
+			emoji: Math.random() > 0.5 ? '☕' : '🍫',
+			dl: (Math.random()*6).toFixed(2),
+			dr: (16 + Math.random()*12).toFixed(2),
+		}));
+
 		introTimeout = setTimeout(() => { introDone = true; }, 500);
 		if (completeAtStart) { totalMs = 1; timeLeft = 0; makeBurst(); return; }
 		totalMs = Math.max(birthdayTimestamp - Date.now(), 1);
@@ -122,6 +130,10 @@
 
 	{#each floatingParticles as fp}
 		<span class="floater" style="--x:{fp.x}%;--delay:{fp.dl}s;--dur:{fp.dr}s;"></span>
+	{/each}
+
+	{#each treatFloaters as t}
+		<span class="treat" style="--x:{t.x}%;--delay:{t.dl}s;--dur:{t.dr}s;">{t.emoji}</span>
 	{/each}
 
 	<div class="content {introDone ? 'show' : ''}">
@@ -201,6 +213,13 @@
 		0% { transform: translateY(0); opacity: 0.3; }
 		60% { opacity: 0.12; }
 		100% { transform: translateY(-120vh); opacity: 0; }
+	}
+
+	.treat {
+		position: absolute; left: var(--x); top: 110%;
+		font-size: 1.1rem; opacity: 0;
+		animation: flu var(--dur) ease-out infinite var(--delay);
+		filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
 	}
 
 	.content {
@@ -344,6 +363,7 @@
 		.tagline.time-up,
 		.burst-flash,
 		.burst,
+		.treat,
 		.glow {
 			animation: none;
 		}

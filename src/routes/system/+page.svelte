@@ -3,17 +3,17 @@
 	import {getFlow} from '$lib/flow.svelte.js';
 
 	const flow = getFlow();
-	const planets = [
+const planets = [
 		{
 			id: 'mercury',
 			name: 'Mercury',
 			orbitRadius: 72,
 			orbitSpeed: 32,
 			size: 18,
-			color: '#c9b8a8',
-			glowColor: 'rgba(201,184,168,0.3)',
+			color: '#8a5a3b',
+			glowColor: 'rgba(138,90,59,0.35)',
 			rings: false,
-			text: 'closest to the warmth you give so freely — quick and bright, always moving toward what matters',
+			text: 'the first bean of the day — quick and bright, always the one to get things started',
 		},
 		{
 			id: 'venus',
@@ -21,10 +21,10 @@
 			orbitRadius: 96,
 			orbitSpeed: 48,
 			size: 25,
-			color: '#e8c4a0',
-			glowColor: 'rgba(232,196,160,0.35)',
+			color: '#e6c9a8',
+			glowColor: 'rgba(230,201,168,0.35)',
 			rings: false,
-			text: 'the brightest one there is — your beauty has nothing to do with mirrors and everything to do with presence',
+			text: 'the brightest one there is — like the foam on a perfect latte, you make everything around you lighter',
 		},
 		{
 			id: 'earth',
@@ -32,10 +32,10 @@
 			orbitRadius: 124,
 			orbitSpeed: 64,
 			size: 28,
-			color: '#8ab4a0',
-			glowColor: 'rgba(138,180,160,0.3)',
+			color: '#a9744f',
+			glowColor: 'rgba(169,116,79,0.35)',
 			rings: false,
-			text: 'home feels like wherever you are — even across distance, you make every mile feel smaller than it should',
+			text: 'home feels like wherever you are — even across distance, you turn any room into a warm corner with cocoa ready',
 		},
 		{
 			id: 'mars',
@@ -43,10 +43,10 @@
 			orbitRadius: 154,
 			orbitSpeed: 80,
 			size: 23,
-			color: '#c47a6a',
-			glowColor: 'rgba(196,122,106,0.3)',
+			color: '#c65d3b',
+			glowColor: 'rgba(198,93,59,0.35)',
 			rings: false,
-			text: 'red and restless — you carry a fire most people never get to see up close',
+			text: 'red and restless — a little chili heat in your chocolate. you carry a fire most people never see up close',
 		},
 		{
 			id: 'jupiter',
@@ -54,10 +54,10 @@
 			orbitRadius: 196,
 			orbitSpeed: 120,
 			size: 43,
-			color: '#d4a87c',
-			glowColor: 'rgba(212,168,124,0.3)',
+			color: '#8d6a4a',
+			glowColor: 'rgba(141,106,74,0.35)',
 			rings: false,
-			text: 'the biggest heart of all — how much room you make for people who need it',
+			text: 'the biggest heart of all — so many layers of warmth, like the richest mocha you keep saving for the good days',
 		},
 		{
 			id: 'saturn',
@@ -65,10 +65,10 @@
 			orbitRadius: 240,
 			orbitSpeed: 160,
 			size: 38,
-			color: '#d8c090',
-			glowColor: 'rgba(216,192,144,0.3)',
+			color: '#e3b98f',
+			glowColor: 'rgba(227,185,143,0.35)',
 			rings: true,
-			text: 'elegant in everything — your rings of grace turn even the simplest moments into something worth looking at longer',
+			text: 'elegant in everything — your rings are like the swirl a spoon leaves in hot chocolate, grace you barely notice',
 		},
 		{
 			id: 'uranus',
@@ -76,10 +76,10 @@
 			orbitRadius: 284,
 			orbitSpeed: 200,
 			size: 30,
-			color: '#9ab8c8',
-			glowColor: 'rgba(154,184,200,0.3)',
+			color: '#b09ac4',
+			glowColor: 'rgba(176,154,196,0.35)',
 			rings: false,
-			text: 'tilted on your own axis — you do things your way and there is no one else who could do them like that',
+			text: 'tilted on your own axis — grape and cocoa both, you do things your way and nobody could do them like that',
 		},
 		{
 			id: 'neptune',
@@ -87,19 +87,19 @@
 			orbitRadius: 324,
 			orbitSpeed: 240,
 			size: 29,
-			color: '#7a8ab8',
-			glowColor: 'rgba(122,138,184,0.3)',
+			color: '#8068a8',
+			glowColor: 'rgba(128,104,168,0.4)',
 			rings: false,
-			text: 'the farthest one and still the brightest — depth runs so much deeper than anyone gives you credit for',
+			text: 'the farthest one and still the brightest — dark and deep like 90% cocoa, richer than anyone gives you credit for',
 		},
 	];
 	const moon = {
 		id: 'moon',
 		name: 'Moon',
 		size: 13,
-		color: '#d4ccc0',
-		glowColor: 'rgba(212,204,192,0.3)',
-		text: 'you have your own phases and every single one is beautiful — even the quiet parts that you hide from everyone else',
+		color: '#f0e0c8',
+		glowColor: 'rgba(240,224,200,0.35)',
+		text: 'you have your own phases and every single one is beautiful — even the quiet parts, like the pause before a perfect cup',
 	};
 	const sun = {
 		id: 'sun',
@@ -107,7 +107,7 @@
 		size: 58,
 		color: '#f5c97a',
 		glowColor: 'rgba(245,201,122,0.5)',
-		text: 'everything orbits around you — and honestly, looking at how much light you put into the world, that makes perfect sense',
+		text: 'everything orbits around you — the main ingredient that makes the whole cup worth it, and honestly it always has been',
 	};
 	const bodyIds = new Set([...planets.map((planet) => planet.id), sun.id, moon.id]);
 	const initialExploredIds = flow.exploredBodies.filter((id) => bodyIds.has(id));
