@@ -91,16 +91,20 @@
 		fallers = fallers.filter((f) => f.id !== id);
 	}
 
-	function scheduleFaller() {
+function scheduleFaller() {
 		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 		fallerTimer = setTimeout(() => {
-			spawnFaller();
+			if (currentRoute?.id !== 'system') spawnFaller();
 			scheduleFaller();
 		}, 5000 + Math.random() * 3000);
 	}
 
 	$effect(() => {
 		if (currentRoute?.id === 'final') flow.markWholeViewed();
+	});
+
+	$effect(() => {
+		if (currentRoute?.id === 'system') fallers = [];
 	});
 
 	async function goBack() {
@@ -163,7 +167,7 @@
 
 {@render children()}
 
-{#if fallers.length}
+{#if fallers.length && currentRoute?.id !== 'system'}
 	<div class="faller-layer" aria-hidden="true">
 		{#each fallers as f (f.id)}
 			{#if f.kind === 'treat'}

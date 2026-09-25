@@ -5,7 +5,7 @@
 
 	// ⚠️  Set the birthday date here (UTC).
 	const birthdayTimestamp = new Date('2026-10-01T00:00:00Z').getTime();
-	// const birthdayTimestamp = Date.now() + (10 * 1000);
+	// const birthdayTimestamp = Date.now() + (5 * 1000); // test timer — never commit!
 	const completeAtStart = untrack(() => initiallyComplete);
 
 	let unlocked = $state(completeAtStart);
