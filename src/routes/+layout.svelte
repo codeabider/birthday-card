@@ -27,6 +27,42 @@
 	let canGoBack = $derived(routeIndex > 1 && !navigating);
 	let canGoForward = $derived(Boolean(currentRoute && nextRoute && (flow.wholeViewed || flow.isComplete(currentRoute.id)) && !navigating));
 
+	const confettiColors = ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#cc5de8', '#ff922b', '#e64980'];
+	let burstId = 0;
+	let particles = $state([]);
+
+	function burstConfetti(clientX, clientY) {
+		const next = [];
+		for (let i = 0; i < 56; i++) {
+			const angle = (Math.PI * 2 * i) / 56 + (Math.random() - 0.5) * 0.4;
+			const speed = 70 + Math.random() * 220;
+			next.push({
+				id: ++burstId,
+				x: clientX,
+				y: clientY,
+				dx: Math.cos(angle) * speed,
+				dy: Math.sin(angle) * speed - 30,
+				rot: (Math.random() * 2 - 1) * 540,
+				dur: 600 + Math.random() * 450,
+				delay: Math.random() * 90,
+				size: 5 + Math.random() * 6,
+				color: confettiColors[(Math.random() * confettiColors.length) | 0],
+				shape: Math.random() < 0.45 ? 'circle' : 'rect'
+			});
+		}
+		particles.push(...next);
+		if (particles.length > 480) particles.splice(0, particles.length - 480);
+	}
+
+	function removeParticle(id) {
+		particles = particles.filter((p) => p.id !== id);
+	}
+
+	function onPointerDown(event) {
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+		burstConfetti(event.clientX, event.clientY);
+	}
+
 	$effect(() => {
 		if (currentRoute?.id === 'final') flow.markWholeViewed();
 	});
@@ -52,6 +88,14 @@
 	}
 
 	onMount(() => {
+		window.addEventListener('pointerdown', onPointerDown, true);
+	});
+
+	onDestroy(() => {
+		if (typeof window !== 'undefined') window.removeEventListener('pointerdown', onPointerDown, true);
+	});
+
+	onMount(() => {
 		flow.hydrate();
 		if (routeIndex !== 0) goto(routeUrl('/'), {replaceState: true});
 		previousUserSelect = document.body.style.userSelect;
@@ -69,6 +113,18 @@
 </svelte:head>
 
 {@render children()}
+
+{#if particles.length}
+	<div class="confetti-layer" aria-hidden="true">
+		{#each particles as p (p.id)}
+			<span
+				class="confetti-piece {p.shape}"
+				style="--x:{p.x}px; --y:{p.y}px; --dx:{p.dx}px; --dy:{p.dy}px; --rot:{p.rot}deg; --dur:{p.dur}ms; --delay:{p.delay}ms; --size:{p.size}px; --color:{p.color};"
+				onanimationend={() => removeParticle(p.id)}
+			></span>
+		{/each}
+	</div>
+{/if}
 
 {#if currentRoute}
 	<nav class="screen-nav" aria-label="Screen navigation">
@@ -103,6 +159,51 @@
 {/if}
 
 <style>
+	.confetti-layer {
+		position: fixed;
+		inset: 0;
+		z-index: 400;
+		pointer-events: none;
+		overflow: hidden;
+	}
+
+	.confetti-piece {
+		position: absolute;
+		left: var(--x);
+		top: var(--y);
+		width: var(--size);
+		height: var(--size);
+		background: var(--color);
+		animation: confetti-burst var(--dur) cubic-bezier(0.16, 0.6, 0.32, 0.94) var(--delay) forwards;
+		will-change: transform, opacity;
+	}
+
+	.confetti-piece.circle {
+		border-radius: 50%;
+	}
+
+	.confetti-piece.rect {
+		border-radius: 1px;
+	}
+
+	@keyframes confetti-burst {
+		0% {
+			opacity: 1;
+			transform: translate(-50%, -50%) rotate(0deg);
+		}
+		100% {
+			opacity: 0;
+			transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.confetti-piece {
+			animation: none;
+			opacity: 0;
+		}
+	}
+
 	.screen-nav {
 		position: fixed;
 		right: max(18px, env(safe-area-inset-right));
