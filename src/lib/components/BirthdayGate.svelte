@@ -90,10 +90,22 @@
 		<p class="tagline">something is coming</p>
 
 		<div class="countdown">
-			<div class="unit"><span class="num">{countdown.days}</span><span class="lab">days</span></div>
-			<div class="unit"><span class="num">{countdown.hours}</span><span class="lab">hours</span></div>
-			<div class="unit"><span class="num">{countdown.minutes}</span><span class="lab">min</span></div>
-			<div class="unit"><span class="num">{countdown.seconds}</span><span class="lab">sec</span></div>
+			<div class="unit">
+				<div class="num">{#key countdown.days}<span class="digit">{countdown.days}</span>{/key}</div>
+				<span class="lab">days</span>
+			</div>
+			<div class="unit">
+				<div class="num">{#key countdown.hours}<span class="digit">{countdown.hours}</span>{/key}</div>
+				<span class="lab">hours</span>
+			</div>
+			<div class="unit">
+				<div class="num">{#key countdown.minutes}<span class="digit">{countdown.minutes}</span>{/key}</div>
+				<span class="lab">min</span>
+			</div>
+			<div class="unit">
+				<div class="num">{#key countdown.seconds}<span class="digit">{countdown.seconds}</span>{/key}</div>
+				<span class="lab">sec</span>
+			</div>
 		</div>
 
 	</div>
@@ -158,22 +170,47 @@
 	}
 
 	.countdown {
-		display: flex; gap: clamp(0.8rem,4vw,1.6rem); justify-content: center;
+		display: flex; gap: clamp(0.7rem,4vw,1.4rem); justify-content: center;
+		animation: count-bob 3.2s ease-in-out infinite;
 	}
 
 	.unit {
-		display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-		min-width: clamp(36px,10vw,52px);
+		display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+		min-width: clamp(40px,11vw,56px);
+		padding: 0.8rem 0.35rem 0.7rem;
+		border-radius: 14px;
+		background: linear-gradient(180deg, rgba(30,18,48,0.85), rgba(12,8,22,0.85));
+		border: 1px solid rgba(244,213,200,0.16);
+		box-shadow: 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(244,213,200,0.07);
 	}
 
 	.num {
 		font-weight: 300; font-size: clamp(1.6rem,6.5vw,2.2rem);
-		color: rgba(244,213,200,0.9); letter-spacing: 0.06em;
+		color: rgba(244,213,200,0.92); letter-spacing: 0.06em;
+		perspective: 300px;
+	}
+
+	.num .digit {
+		display: inline-block;
+		animation: flip-in 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+		transform-origin: center bottom;
 	}
 
 	.lab {
 		font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
-		color: rgba(240,235,227,0.25);
+		color: rgba(240,235,227,0.3);
+	}
+
+	@keyframes flip-in {
+		0% { transform: rotateX(-90deg); opacity: 0; }
+		55% { opacity: 1; transform: rotateX(14deg); }
+		80% { transform: rotateX(-7deg); }
+		100% { transform: rotateX(0deg); opacity: 1; }
+	}
+
+	@keyframes count-bob {
+		0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 6px rgba(244,213,200,0.05)); }
+		50% { transform: translateY(-5px); filter: drop-shadow(0 10px 26px rgba(244,213,200,0.18)); }
 	}
 
 	
@@ -190,5 +227,12 @@
 	@keyframes glwP {
 		0%,100% { transform: scale(1); opacity: 0.5; }
 		50% { transform: scale(1.8); opacity: 0.9; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.countdown,
+		.num .digit {
+			animation: none;
+		}
 	}
 </style>
