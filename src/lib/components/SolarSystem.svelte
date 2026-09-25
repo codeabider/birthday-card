@@ -142,10 +142,10 @@
 	<!-- Hint text -->
 	<p class="hint" class:hide={selectedBody !== null}>
 		{exploredIds.size === 0
-			? 'tap an object you wish to visit'
+			? 'See what they say about you...'
 			: exploredIds.size < 4
-				? 'tap a few more to continue'
-				: 'the system is awake'}
+				? 'tap a few more to continue...'
+				: 'the system is awake!'}
 	</p>
 
 	<!-- Planet detail card overlay -->

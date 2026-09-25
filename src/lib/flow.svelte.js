@@ -9,7 +9,6 @@ export const NAVIGATION_CONTEXT = Symbol('birthday-card-navigation');
 
 export const FLOW_ROUTES = [
 	{ id: 'gate', path: '/', label: 'Timer' },
-	{ id: 'open', path: '/open', label: 'Opening' },
 	{ id: 'greet', path: '/greet', label: 'Greeting' },
 	{ id: 'system', path: '/system', label: 'Solar System' },
 	{ id: 'choose', path: '/choose', label: 'Choose Your Day' },
