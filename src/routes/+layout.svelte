@@ -162,7 +162,7 @@ function scheduleFaller() {
 
 <svelte:head>
 	<meta name="robots" content="noindex, nofollow" />
-	<title>Nemo's special day</title>
+	<title>Namita's special day</title>
 </svelte:head>
 
 {@render children()}
