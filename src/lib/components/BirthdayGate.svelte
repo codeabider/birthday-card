@@ -1,14 +1,13 @@
 <script>
 	import {onDestroy, onMount, untrack} from 'svelte';
 
-	let {onReady, initiallyComplete = false, skipCountdown = false} = $props();
+	let {onReady, initiallyComplete = false} = $props();
 
 	// ⚠️  Set the birthday date here (UTC).
-	const birthdayTimestamp = new Date('2026-12-31T00:00:00Z').getTime();
-	// const birthdayTimestamp = Date.now() + (10 * 1000);
+	// const birthdayTimestamp = new Date('2026-10-01T00:00:00Z').getTime();
+	const birthdayTimestamp = Date.now() + (10 * 1000);
 	const completeAtStart = untrack(() => initiallyComplete);
 
-	let devOverride = $state(false);
 	let unlocked = $state(completeAtStart);
 	let unlockNotified = $state(completeAtStart);
 	let countdown = $state({days:'00',hours:'00',minutes:'00',seconds:'00'});
@@ -16,6 +15,7 @@
 	let floatingParticles = $state([]);
 	let introDone = $state(false);
 	let intervalId = null;
+	let introTimeout;
 	let unlockTimeout;
 
 	function scheduleReady() {
@@ -46,14 +46,6 @@
 		};
 	}
 
-	function skipToBirthday() {
-		if (devOverride || completeAtStart) return;
-		devOverride = true;
-		intervalId && clearInterval(intervalId);
-		intervalId = null;
-		scheduleReady();
-	}
-
 	onMount(() => {
 		stars = Array.from({length: 90}, () => ({
 			x: Math.random()*100, y: Math.random()*100,
@@ -68,17 +60,15 @@
 			dr: (5+Math.random()*8).toFixed(2),
 		}));
 
-		setTimeout(() => { introDone = true; }, 500);
-		if (completeAtStart || skipCountdown) {
-			if (skipCountdown && !completeAtStart) skipToBirthday();
-			return;
-		}
+		introTimeout = setTimeout(() => { introDone = true; }, 500);
+		if (completeAtStart) return;
 		countUp();
 		if (!unlocked) intervalId = setInterval(countUp, 1000);
 	});
 
 	onDestroy(() => {
 		intervalId && clearInterval(intervalId);
+		introTimeout && clearTimeout(introTimeout);
 		unlockTimeout && clearTimeout(unlockTimeout);
 	});
 </script>
@@ -103,7 +93,6 @@
 			<div class="unit"><span class="num">{countdown.seconds}</span><span class="lab">sec</span></div>
 		</div>
 
-		<button class="whisper" onclick={skipToBirthday}>tap to skip</button>
 	</div>
 
 	<div class="glow"></div>
@@ -126,10 +115,6 @@
 		background: radial-gradient(ellipse at 50% 40%, #1e1230 0%, #0a0812 75%);
 		overflow: hidden;
 	}
-
-	.unlock-out { animation: gFade 1.2s ease forwards; }
-
-	@keyframes gFade { to { opacity: 0; pointer-events: none; } }
 
 	.star {
 		position: absolute; left: var(--x); top: var(--y);
@@ -188,12 +173,7 @@
 		color: rgba(240,235,227,0.25);
 	}
 
-	.whisper {
-		font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
-		color: rgba(240,235,227,0.18); background: transparent; border: none; cursor: pointer;
-		font-family: inherit; padding: 0;
-	}
-	.whisper:hover { color: rgba(240,235,227,0.35); }
+	
 
 	.glow {
 		position: absolute; top: 40%; left: 50%;

@@ -1,6 +1,7 @@
 <script>
 	import '../app.css';
 	import { goto } from '$app/navigation';
+	import { base } from '$app/paths';
 	import { page } from '$app/state';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { createFlow, FLOW_CONTEXT } from '$lib/flow.svelte.js';
@@ -11,19 +12,30 @@
 
 	let navigating = $state(false);
 	let previousUserSelect = '';
-	let path = $derived(page.url.pathname.replace(/\/+$/, '') || '/');
+	let path = $derived.by(() => {
+		const trailing = page.url.pathname.replace(/\/+$/, '') || '/';
+		if (!base || base === '/') return trailing;
+		if (trailing === base) return '/';
+		if (!trailing.startsWith(base + '/')) return trailing;
+		return trailing.slice(base.length) || '/';
+	});
+	let routeUrl = (r) => (base ? base + r : r);
 	let routeIndex = $derived(flow.routes.findIndex((route) => route.path === path));
 	let currentRoute = $derived(flow.routes[routeIndex]);
 	let previousRoute = $derived(flow.routes[routeIndex - 1]);
 	let nextRoute = $derived(flow.routes[routeIndex + 1]);
 	let canGoBack = $derived(routeIndex > 1 && !navigating);
-	let canGoForward = $derived(Boolean(currentRoute && nextRoute && flow.isComplete(currentRoute.id) && !navigating));
+	let canGoForward = $derived(Boolean(currentRoute && nextRoute && (flow.wholeViewed || flow.isComplete(currentRoute.id)) && !navigating));
+
+	$effect(() => {
+		if (currentRoute?.id === 'final') flow.markWholeViewed();
+	});
 
 	async function goBack() {
 		if (!canGoBack || !previousRoute) return;
 		navigating = true;
 		try {
-			await goto(previousRoute.path);
+			await goto(routeUrl(previousRoute.path));
 		} finally {
 			navigating = false;
 		}
@@ -33,13 +45,15 @@
 		if (!canGoForward || !nextRoute) return;
 		navigating = true;
 		try {
-			await goto(nextRoute.path, {replaceState: routeIndex === 0});
+			await goto(routeUrl(nextRoute.path), {replaceState: routeIndex === 0});
 		} finally {
 			navigating = false;
 		}
 	}
 
 	onMount(() => {
+		flow.hydrate();
+		if (routeIndex !== 0) goto(routeUrl('/'), {replaceState: true});
 		previousUserSelect = document.body.style.userSelect;
 		document.body.style.userSelect = 'none';
 	});
@@ -50,7 +64,6 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href="/favicon.svg" />
 	<meta name="robots" content="noindex, nofollow" />
 	<title>For You</title>
 </svelte:head>
@@ -64,8 +77,8 @@
 			class="screen-nav-button"
 			disabled={!canGoBack}
 			onclick={goBack}
-			aria-label={previousRoute ? `Previous: ${previousRoute.label}` : 'Previous screen'}
-			title={previousRoute ? `Previous: ${previousRoute.label}` : 'Previous screen'}
+			aria-label={canGoBack && previousRoute ? `Previous: ${previousRoute.label}` : 'Previous unavailable'}
+			title={canGoBack && previousRoute ? `Previous: ${previousRoute.label}` : 'Previous unavailable'}
 		>
 			<svg viewBox="0 0 24 24" aria-hidden="true">
 				<path d="M15 5 8 12l7 7" />
@@ -78,8 +91,8 @@
 				class="screen-nav-button"
 				disabled={!canGoForward}
 				onclick={goForward}
-				aria-label={`Next: ${nextRoute.label}`}
-				title={`Next: ${nextRoute.label}`}
+				aria-label={canGoForward ? `Next: ${nextRoute.label}` : `Complete ${currentRoute.label} to continue`}
+				title={canGoForward ? `Next: ${nextRoute.label}` : `Complete ${currentRoute.label} to continue`}
 			>
 				<svg viewBox="0 0 24 24" aria-hidden="true">
 					<path d="m9 5 7 7-7 7" />

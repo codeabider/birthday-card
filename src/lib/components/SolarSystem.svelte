@@ -1,24 +1,43 @@
 <script>
-	import {onMount, tick, untrack} from 'svelte';
+	import {onDestroy, onMount, tick, untrack} from 'svelte';
 
 	let {planets, moon, sun, onProgress, initialExploredIds = []} = $props();
 	const initialIds = untrack(() => initialExploredIds);
 	const initialPlanets = untrack(() => planets);
+	const initialMoon = untrack(() => moon);
+	const initialSun = untrack(() => sun);
+	const stars = Array.from({length: 120}, (_, i) => ({
+		x: (i * 73) % 100,
+		y: (i * 37) % 100,
+		duration: 4 + (i % 9),
+		delay: (i % 12) * 0.5,
+		opacity: 0.05 + (i % 4) * 0.04,
+	}));
 
 	let scale = $state(1);
 	let selectedBody = $state(null);
 	let showingCard = $state(false);
 	let containerRef = $state(null);
+	let cardOverlayRef = $state(null);
 	let prefersReducedMotion = $state(false);
 	let exploredIds = $state(new Set(initialIds));
-	const planetIds = new Set(initialPlanets.map((planet) => planet.id));
+	let mediaQuery;
+	let cardTimers = [];
+	const bodyIds = new Set([...initialPlanets.map((planet) => planet.id), initialSun.id, initialMoon.id]);
+
+	function handleMotionPreference(event) {
+		prefersReducedMotion = event.matches;
+	}
+
+	function clearCardTimers() {
+		cardTimers.forEach(clearTimeout);
+		cardTimers = [];
+	}
 
 	onMount(async () => {
-		const mqs = window.matchMedia('(prefers-reduced-motion: reduce)');
-		prefersReducedMotion = mqs.matches;
-		if (!prefersReducedMotion) {
-			mqs.addEventListener('change', (e) => { prefersReducedMotion = e.matches; });
-		}
+		mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		prefersReducedMotion = mediaQuery.matches;
+		mediaQuery.addEventListener('change', handleMotionPreference);
 
 		onProgress?.(exploredIds);
 
@@ -27,33 +46,47 @@
 		const viewW = window.innerWidth;
 		const viewH = window.innerHeight;
 		const shortest = Math.min(viewW, viewH);
-		const orbitMax = 340;
-		const fitScale = (shortest / 2 - 30) / orbitMax;
-		scale = Math.min(fitScale, 1.2);
+		const orbitMax = 339;
+		const fitScale = (shortest / 2 - 8) / orbitMax;
+		scale = Math.min(fitScale, 1.35);
+	});
+
+	onDestroy(() => {
+		mediaQuery?.removeEventListener('change', handleMotionPreference);
+		clearCardTimers();
 	});
 
 	function handleTap(body) {
 		if (!body || selectedBody === body.id) return;
+		clearCardTimers();
 		selectedBody = body;
-		if (planetIds.has(body.id)) {
+		if (bodyIds.has(body.id)) {
 			exploredIds = new Set([...exploredIds, body.id]);
 			onProgress?.(exploredIds);
 		}
 		showingCard = false;
-		setTimeout(() => { showingCard = true; }, 500);
+		cardTimers.push(setTimeout(async () => {
+			showingCard = true;
+			await tick();
+			cardOverlayRef?.focus();
+		}, 500));
 	}
 
 	function dismiss() {
 		if (selectedBody === null) return;
+		clearCardTimers();
+		const selectedId = selectedBody.id;
 		showingCard = false;
-		setTimeout(() => { selectedBody = null; }, 400);
+		cardTimers.push(setTimeout(() => {
+			if (selectedBody?.id === selectedId) selectedBody = null;
+		}, 400));
 	}
 </script>
 
 <div class="system" bind:this={containerRef}>
 	<!-- Background stars -->
-	{#each Array.from({length: 120}) as _, i}
-		<span class="bg-star" style="--sx:{Math.random()*100}vw;--sy:{Math.random()*100}vh;--sdur:{4+Math.random()*8}s;--sdel:{Math.random()*6}s;--sop:{0.05+Math.random()*0.15};"></span>
+	{#each stars as star}
+		<span class="bg-star" style="--sx:{star.x}vw;--sy:{star.y}vh;--sdur:{star.duration}s;--sdel:{star.delay}s;--sop:{star.opacity};"></span>
 	{/each}
 
 	<!-- Orbit system, scaled -->
@@ -108,11 +141,20 @@
 
 	<!-- Hint text -->
 	<p class="hint" class:hide={selectedBody !== null}>
-		{exploredIds.size >= 4 ? 'four planets explored' : `explore ${4 - exploredIds.size} more ${exploredIds.size === 3 ? 'planet' : 'planets'}`}
+		{exploredIds.size >= 4 ? '4 celestial bodies explored' : `explore ${4 - exploredIds.size} more celestial ${exploredIds.size === 3 ? 'body' : 'bodies'}`}
 	</p>
 
 	<!-- Planet detail card overlay -->
-	<button class="card-overlay" class:open={showingCard} onkeydown={(e) => { if (e.key === 'Escape') dismiss(); }} aria-label="Go back" onclick={dismiss}>
+	<button
+		bind:this={cardOverlayRef}
+		class="card-overlay"
+		class:open={showingCard}
+		disabled={!showingCard}
+		aria-hidden={!showingCard}
+		onkeydown={(e) => { if (e.key === 'Escape') dismiss(); }}
+		aria-label={selectedBody ? `Close ${selectedBody.name} details` : 'Close details'}
+		onclick={dismiss}
+	>
 		<span class="card-inner" role="status">
 			{#if selectedBody}
 				<div class="card-orb" style="--col:{selectedBody.color};--glow:{selectedBody.glowColor};width:{selectedBody.size * 1.6}px;height:{selectedBody.size * 1.6}px;">
@@ -284,7 +326,7 @@
 	/* Hint */
 	.hint {
 		position: absolute;
-		bottom: max(4vh, env(safe-area-inset-bottom), 24px);
+		top: max(calc(env(safe-area-inset-top) + 12px), 28px);
 		left: 50%;
 		z-index: 20;
 		transform: translateX(-50%);

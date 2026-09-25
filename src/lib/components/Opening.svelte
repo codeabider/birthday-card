@@ -21,10 +21,10 @@
 	});
 
 	const particles = Array.from({length: 22}, (_, i) => ({
-		x: Math.random() * 100,
+		x: (i * 41) % 100,
 		delay: (i * 0.35).toFixed(1),
-		dur: (4 + Math.random() * 7).toFixed(1),
-		size: 2 + Math.random() * 2,
+		dur: 5 + (i % 7),
+		size: 2 + (i % 3) * 0.7,
 	}));
 </script>
 

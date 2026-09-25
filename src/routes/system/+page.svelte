@@ -9,7 +9,7 @@
 			name: 'Mercury',
 			orbitRadius: 72,
 			orbitSpeed: 32,
-			size: 14,
+			size: 18,
 			color: '#c9b8a8',
 			glowColor: 'rgba(201,184,168,0.3)',
 			rings: false,
@@ -20,7 +20,7 @@
 			name: 'Venus',
 			orbitRadius: 96,
 			orbitSpeed: 48,
-			size: 20,
+			size: 25,
 			color: '#e8c4a0',
 			glowColor: 'rgba(232,196,160,0.35)',
 			rings: false,
@@ -31,7 +31,7 @@
 			name: 'Earth',
 			orbitRadius: 124,
 			orbitSpeed: 64,
-			size: 22,
+			size: 28,
 			color: '#8ab4a0',
 			glowColor: 'rgba(138,180,160,0.3)',
 			rings: false,
@@ -42,7 +42,7 @@
 			name: 'Mars',
 			orbitRadius: 154,
 			orbitSpeed: 80,
-			size: 18,
+			size: 23,
 			color: '#c47a6a',
 			glowColor: 'rgba(196,122,106,0.3)',
 			rings: false,
@@ -53,7 +53,7 @@
 			name: 'Jupiter',
 			orbitRadius: 196,
 			orbitSpeed: 120,
-			size: 34,
+			size: 43,
 			color: '#d4a87c',
 			glowColor: 'rgba(212,168,124,0.3)',
 			rings: false,
@@ -64,7 +64,7 @@
 			name: 'Saturn',
 			orbitRadius: 240,
 			orbitSpeed: 160,
-			size: 30,
+			size: 38,
 			color: '#d8c090',
 			glowColor: 'rgba(216,192,144,0.3)',
 			rings: true,
@@ -75,7 +75,7 @@
 			name: 'Uranus',
 			orbitRadius: 284,
 			orbitSpeed: 200,
-			size: 24,
+			size: 30,
 			color: '#9ab8c8',
 			glowColor: 'rgba(154,184,200,0.3)',
 			rings: false,
@@ -86,7 +86,7 @@
 			name: 'Neptune',
 			orbitRadius: 324,
 			orbitSpeed: 240,
-			size: 23,
+			size: 29,
 			color: '#7a8ab8',
 			glowColor: 'rgba(122,138,184,0.3)',
 			rings: false,
@@ -96,7 +96,7 @@
 	const moon = {
 		id: 'moon',
 		name: 'Moon',
-		size: 10,
+		size: 13,
 		color: '#d4ccc0',
 		glowColor: 'rgba(212,204,192,0.3)',
 		text: 'you have your own phases and every single one is beautiful — even the quiet parts that you hide from everyone else',
@@ -104,13 +104,13 @@
 	const sun = {
 		id: 'sun',
 		name: 'Sun',
-		size: 46,
+		size: 58,
 		color: '#f5c97a',
 		glowColor: 'rgba(245,201,122,0.5)',
 		text: 'everything orbits around you — and honestly, looking at how much light you put into the world, that makes perfect sense',
 	};
-	const planetIds = new Set(planets.map((planet) => planet.id));
-	const initialExploredIds = flow.solarIds.filter((id) => planetIds.has(id));
+	const bodyIds = new Set([...planets.map((planet) => planet.id), sun.id, moon.id]);
+	const initialExploredIds = flow.exploredBodies.filter((id) => bodyIds.has(id));
 </script>
 
 <SolarSystem
@@ -118,5 +118,5 @@
 	{moon}
 	{sun}
 	{initialExploredIds}
-	onProgress={(ids) => flow.setSolarIds(ids)}
+	onProgress={(ids) => flow.setExploredBodies(ids)}
 />

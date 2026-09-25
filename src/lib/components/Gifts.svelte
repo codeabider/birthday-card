@@ -76,7 +76,14 @@
 	onMount(() => {
 		if (hasInitialFeeling) {
 			onProgress?.(feelingAtStart, revealedAtStart);
-			if (revealedAtStart) burstGlow();
+			if (revealedAtStart) {
+				burstGlow();
+			} else {
+				revealTimers = [
+					setTimeout(() => { revealing = true; }, 300),
+					setTimeout(() => { revealed = true; burstGlow(); onProgress?.(feelingAtStart, true); }, 1200),
+				];
+			}
 		} else {
 			introTimeout = setTimeout(() => { introDone = true; }, 400);
 		}

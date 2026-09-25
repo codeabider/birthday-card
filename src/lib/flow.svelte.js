@@ -1,7 +1,8 @@
 import { browser } from '$app/environment';
 import { getContext } from 'svelte';
 
-const STORAGE_KEY = 'birthday-card-flow-v1';
+const PROGRESS_KEY = 'birthday-card-flow-v1';
+const UNLOCK_KEY = 'birthday-card-unlocked-v1';
 
 export const FLOW_CONTEXT = Symbol('birthday-card-flow');
 
@@ -15,81 +16,74 @@ export const FLOW_ROUTES = [
 	{ id: 'final', path: '/final', label: 'Final' },
 ];
 
-function loadState() {
-	if (!browser) return null;
-
-	try {
-		const value = sessionStorage.getItem(STORAGE_KEY);
-		return value ? JSON.parse(value) : null;
-	} catch {
-		return null;
-	}
-}
-
 export function createFlow() {
 	let completed = $state([]);
-	let solarIds = $state([]);
+	let exploredBodies = $state([]);
 	let choices = $state({});
 	let giftIndex = $state(null);
 	let giftRevealed = $state(false);
-	let hydrated = $state(false);
-
-	function persist() {
-		if (!browser) return;
-		sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ completed, solarIds, choices, giftIndex, giftRevealed }));
-	}
+	let wholeViewed = $state(false);
 
 	function hydrate() {
-		const saved = loadState();
-		if (saved) {
-			completed = Array.isArray(saved.completed) ? saved.completed : [];
-			solarIds = Array.isArray(saved.solarIds) ? saved.solarIds : [];
-			choices = saved.choices && typeof saved.choices === 'object' ? saved.choices : {};
-			giftIndex = Number.isInteger(saved.giftIndex) ? saved.giftIndex : null;
-			giftRevealed = saved.giftRevealed === true;
+		if (!browser) return;
+		try {
+			sessionStorage.removeItem(PROGRESS_KEY);
+			wholeViewed = sessionStorage.getItem(UNLOCK_KEY) === '1';
+		} catch {
+			return;
 		}
-		hydrated = true;
+	}
+
+	function markWholeViewed() {
+		if (wholeViewed) return;
+		wholeViewed = true;
+		if (!browser) return;
+		try {
+			sessionStorage.setItem(UNLOCK_KEY, '1');
+		} catch {
+			return;
+		}
 	}
 
 	function complete(id) {
-		if (!completed.includes(id)) {
-			completed = [...completed, id];
-			persist();
-		}
+		if (!completed.includes(id)) completed = [...completed, id];
 	}
 
-	function setSolarIds(ids) {
-		solarIds = [...new Set(ids)];
-		if (solarIds.length >= 4) completed = [...new Set([...completed, 'system'])];
-		persist();
+	function setExploredBodies(ids) {
+		exploredBodies = [...new Set(ids)];
+		completed = exploredBodies.length >= 4
+			? [...new Set([...completed, 'system'])]
+			: completed.filter((id) => id !== 'system');
 	}
 
 	function setChoices(value) {
 		choices = { ...value };
 		const completeChoices = ['s0', 's1', 's2'].every((key) => Number.isInteger(choices[key]));
-		if (completeChoices) completed = [...new Set([...completed, 'choose'])];
-		persist();
+		completed = completeChoices
+			? [...new Set([...completed, 'choose'])]
+			: completed.filter((id) => id !== 'choose');
 	}
 
 	function setGift(index, isRevealed) {
 		giftIndex = Number.isInteger(index) ? index : null;
 		giftRevealed = isRevealed === true;
-		if (giftRevealed) completed = [...new Set([...completed, 'gifts'])];
-		persist();
+		completed = giftRevealed
+			? [...new Set([...completed, 'gifts'])]
+			: completed.filter((id) => id !== 'gifts');
 	}
-
-	if (browser) hydrate();
 
 	return {
 		routes: FLOW_ROUTES,
 		get completed() { return completed; },
-		get solarIds() { return solarIds; },
+		get exploredBodies() { return exploredBodies; },
 		get choices() { return choices; },
 		get giftIndex() { return giftIndex; },
 		get giftRevealed() { return giftRevealed; },
-		get hydrated() { return hydrated; },
+		get wholeViewed() { return wholeViewed; },
+		hydrate,
+		markWholeViewed,
 		complete,
-		setSolarIds,
+		setExploredBodies,
 		setChoices,
 		setGift,
 		isComplete(id) { return completed.includes(id); },
