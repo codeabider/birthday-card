@@ -150,7 +150,7 @@ function scheduleFaller() {
 
 	onMount(() => {
 		flow.hydrate();
-		if (routeIndex !== 0) goto(routeUrl('/'), {replaceState: true});
+		if (routeIndex !== 0 && !flow.wholeViewed) goto(routeUrl('/'), {replaceState: true});
 		previousUserSelect = document.body.style.userSelect;
 		document.body.style.userSelect = 'none';
 	});

@@ -5,6 +5,8 @@ const PROGRESS_KEY = 'birthday-card-flow-v1';
 const UNLOCK_KEY = 'birthday-card-unlocked-v1';
 const PLAN_KEY = 'birthday-card-plan-v1';
 
+export const SECRET_KEY = 'birthday-preview-2026';
+
 export const FLOW_CONTEXT = Symbol('birthday-card-flow');
 export const NAVIGATION_CONTEXT = Symbol('birthday-card-navigation');
 
@@ -36,7 +38,16 @@ export function createFlow() {
 				}
 			}
 			sessionStorage.removeItem(PROGRESS_KEY);
-			wholeViewed = sessionStorage.getItem(UNLOCK_KEY) === '1';
+			if (sessionStorage.getItem(UNLOCK_KEY) === '1') wholeViewed = true;
+			const url = new URL(window.location.href);
+			if (url.searchParams.get('key') === SECRET_KEY && !wholeViewed) {
+				wholeViewed = true;
+				sessionStorage.setItem(UNLOCK_KEY, '1');
+			}
+			if (url.searchParams.has('key')) {
+				url.searchParams.delete('key');
+				history.replaceState(null, '', url.pathname + url.hash);
+			}
 		} catch {
 			return;
 		}

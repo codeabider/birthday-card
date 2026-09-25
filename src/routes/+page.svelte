@@ -8,7 +8,7 @@
 </script>
 
 <BirthdayGate
-	initiallyComplete={flow.isComplete('gate')}
+	initiallyComplete={flow.wholeViewed || flow.isComplete('gate')}
 	onReady={() => flow.complete('gate')}
 	onAutoProceed={advance}
 />
