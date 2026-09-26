@@ -27,7 +27,7 @@
 	let currentRoute = $derived(flow.routes[routeIndex]);
 	let previousRoute = $derived(flow.routes[routeIndex - 1]);
 	let nextRoute = $derived(flow.routes[routeIndex + 1]);
-	let canGoBack = $derived(routeIndex > 1 && !navigating);
+	let canGoBack = $derived(routeIndex > 0 && !navigating);
 	let canGoForward = $derived(Boolean(currentRoute && nextRoute && (flow.wholeViewed || flow.isComplete(currentRoute.id)) && !navigating));
 
 	const confettiColors = ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#cc5de8', '#ff922b', '#e64980'];
@@ -103,6 +103,10 @@ function scheduleFaller() {
 
 	$effect(() => {
 		if (currentRoute?.id === 'final') flow.markWholeViewed();
+	});
+
+	$effect(() => {
+		if (currentRoute?.id === 'gate') flow.onGate();
 	});
 
 	$effect(() => {
@@ -206,7 +210,7 @@ function scheduleFaller() {
 	</div>
 {/if}
 
-{#if currentRoute}
+{#if currentRoute && routeIndex > 0}
 	<nav class="screen-nav" aria-label="Screen navigation">
 		<button
 			type="button"
@@ -221,7 +225,7 @@ function scheduleFaller() {
 			</svg>
 		</button>
 
-		{#if nextRoute}
+		{#if nextRoute && currentRoute.id !== 'final'}
 			<button
 				type="button"
 				class="screen-nav-button {nextRoute && canGoForward ? 'wiggle' : ''}"

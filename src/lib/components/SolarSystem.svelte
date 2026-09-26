@@ -15,6 +15,7 @@
 	}));
 
 	let scale = $state(1);
+	let startAngles = $state([]);
 	let selectedBody = $state(null);
 	let showingCard = $state(false);
 	let containerRef = $state(null);
@@ -38,6 +39,9 @@
 		mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 		prefersReducedMotion = mediaQuery.matches;
 		mediaQuery.addEventListener('change', handleMotionPreference);
+
+		// random starting position around each orbit, once per mount
+		startAngles = initialPlanets.map(() => Math.random() * 360);
 
 		onProgress?.(exploredIds);
 
@@ -104,10 +108,10 @@
 		</button>
 
 		<!-- Planets -->
-		{#each planets as planet}
+		{#each planets as planet, i}
 			<div
 				class="orbit-body"
-				style="--radius:{planet.orbitRadius}px;--speed:{planet.orbitSpeed}s;"
+				style="--radius:{planet.orbitRadius}px;--speed:{planet.orbitSpeed}s;--start:{startAngles[i] ?? 0}deg;"
 				role="presentation"
 			>
 				<button
@@ -263,8 +267,8 @@
 	}
 
 	@keyframes orbitSpin {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
+		from { transform: rotate(var(--start, 0deg)); }
+		to { transform: rotate(calc(var(--start, 0deg) + 360deg)); }
 	}
 
 	/* Planet positioned at top of orbit ring */

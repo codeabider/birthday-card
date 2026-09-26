@@ -1,10 +1,6 @@
 import { browser } from '$app/environment';
 import { getContext } from 'svelte';
 
-const PROGRESS_KEY = 'birthday-card-flow-v1';
-const UNLOCK_KEY = 'birthday-card-unlocked-v1';
-const PLAN_KEY = 'birthday-card-plan-v1';
-
 export const SECRET_KEY = 'birthday-preview-2026';
 
 export const FLOW_CONTEXT = Symbol('birthday-card-flow');
@@ -25,25 +21,15 @@ export function createFlow() {
 	let choices = $state({});
 	let giftIndex = $state(null);
 	let giftRevealed = $state(false);
+	let giftEverOpened = $state(false);
 	let wholeViewed = $state(false);
+	let restarting = $state(false);
 
 	function hydrate() {
 		if (!browser) return;
 		try {
-			const savedPlan = sessionStorage.getItem(PLAN_KEY);
-			if (savedPlan) {
-				const parsed = JSON.parse(savedPlan);
-				if (parsed && ['s0', 's1', 's2', 's3'].every((key) => Number.isInteger(parsed[key]))) {
-					choices = { ...parsed };
-				}
-			}
-			sessionStorage.removeItem(PROGRESS_KEY);
-			if (sessionStorage.getItem(UNLOCK_KEY) === '1') wholeViewed = true;
 			const url = new URL(window.location.href);
-			if (url.searchParams.get('key') === SECRET_KEY && !wholeViewed) {
-				wholeViewed = true;
-				sessionStorage.setItem(UNLOCK_KEY, '1');
-			}
+			if (url.searchParams.get('key') === SECRET_KEY) wholeViewed = true;
 			if (url.searchParams.has('key')) {
 				url.searchParams.delete('key');
 				history.replaceState(null, '', url.pathname + url.hash);
@@ -54,14 +40,23 @@ export function createFlow() {
 	}
 
 	function markWholeViewed() {
-		if (wholeViewed) return;
+		if (wholeViewed || restarting) return;
 		wholeViewed = true;
-		if (!browser) return;
-		try {
-			sessionStorage.setItem(UNLOCK_KEY, '1');
-		} catch {
-			return;
-		}
+	}
+
+	function onGate() {
+		restarting = false;
+	}
+
+	function reset() {
+		restarting = true;
+		completed = [];
+		exploredBodies = [];
+		choices = {};
+		giftIndex = null;
+		giftRevealed = false;
+		giftEverOpened = false;
+		wholeViewed = false;
 	}
 
 	function complete(id) {
@@ -77,12 +72,6 @@ export function createFlow() {
 
 	function setChoices(value) {
 		choices = { ...value };
-		try {
-			if (!browser) throw new Error('no browser');
-			sessionStorage.setItem(PLAN_KEY, JSON.stringify(choices));
-		} catch {
-			// non-fatal: plan just won't survive a reload
-		}
 		const completeChoices = ['s0', 's1', 's2', 's3'].every((key) => Number.isInteger(choices[key]));
 		completed = completeChoices
 			? [...new Set([...completed, 'choose'])]
@@ -92,7 +81,8 @@ export function createFlow() {
 	function setGift(index, isRevealed) {
 		giftIndex = Number.isInteger(index) ? index : null;
 		giftRevealed = isRevealed === true;
-		completed = giftRevealed
+		if (giftRevealed) giftEverOpened = true;
+		completed = giftEverOpened
 			? [...new Set([...completed, 'gifts'])]
 			: completed.filter((id) => id !== 'gifts');
 	}
@@ -107,6 +97,8 @@ export function createFlow() {
 		get wholeViewed() { return wholeViewed; },
 		hydrate,
 		markWholeViewed,
+		onGate,
+		reset,
 		complete,
 		setExploredBodies,
 		setChoices,

@@ -3,16 +3,17 @@
 
 	let {onReady, initiallyComplete = false, onAutoProceed} = $props();
 
-	// ⚠️  Set the birthday date here (UTC). 01 Oct 2026 00:00 IST = 30 Sep 2026 18:30 UTC.
+// ⚠️  Set the birthday date here (UTC). 01 Oct 2026 00:00 IST = 30 Sep 2026 18:30 UTC.
 	const birthdayTimestamp = new Date('2026-10-01T00:00:00+05:30').getTime();
-	// const birthdayTimestamp = Date.now() + (5 * 1000); // test timer — never commit! (LOCAL TEST)
+	// const birthdayTimestamp = Date.now() + 5000; // test timer — never commit! (LOCAL TEST)
+	// Cup fill span: the liquid climbs 16vh → 80vh proportionally over the last 7 days.
+	const COUNTDOWN_SPAN_MS = 7 * 864e5;
 	const completeAtStart = untrack(() => initiallyComplete);
 
 	let unlocked = $state(completeAtStart);
 	let unlockNotified = $state(completeAtStart);
 	let countdown = $state({days:'00',hours:'00',minutes:'00',seconds:'00'});
 	let timeLeft = $state(0);
-	let totalMs = 0;
 	let stars = $state([]);
 	let burst = $state([]);
 	const burstPalette = ['#ff6b9d','#ffb347','#7ae0ff','#9b7bff','#7dffb0','#f4d5c8','#ff477e'];
@@ -62,7 +63,7 @@
 		makeBurst();
 		unlockTimeout = setTimeout(() => onReady?.(), 1200);
 		startDrain();
-		advanceTimeout = setTimeout(() => onAutoProceed?.(), 5300);
+		advanceTimeout = setTimeout(() => onAutoProceed?.(), 4000);
 	}
 
 	function countUp() {
@@ -91,12 +92,16 @@
 	}
 
 	function tickFill() {
-		const left = Math.max(birthdayTimestamp - Date.now(), 0);
-		const span = Math.max(totalMs, 1);
-		frac = Math.min(left / span, 1);
+		const now = Date.now();
+		const left = Math.max(birthdayTimestamp - now, 0);
+		const span = COUNTDOWN_SPAN_MS;
+		const elapsed = Math.min(Math.max(span - left, 0), span);
+		frac = left / span;
 		hot = frac < 0.2;
-		liquidPct = `${Math.max(80 * (1 - frac), 16).toFixed(3)}vh`;
-		glowDur = `${(1.2 + 2.8 * frac).toFixed(2)}s`;
+		// absolute, proportional fill — independent of when the page loads:
+		// elapsed/span of the 7-day window → 16vh..80vh, e.g. 3 days in → ~43vh
+		liquidPct = `${(16 + 64 * (elapsed / span)).toFixed(3)}vh`;
+		glowDur = `${(1.2 + 2.8 * Math.min(frac, 1)).toFixed(2)}s`;
 		taglineText =
 			left >= 864e5
 				? 'something warm is brewing'
@@ -111,7 +116,7 @@
 	function startDrain() {
 		if (typeof requestAnimationFrame !== 'function') return;
 		const t0 = performance.now();
-		const DRAIN_MS = 4800;
+		const DRAIN_MS = 3600;
 		function step(now) {
 			const t = Math.min((now - t0) / DRAIN_MS, 1);
 			liquidPct = `${(80 - 70 * t).toFixed(3)}vh`;
@@ -129,8 +134,17 @@
 		}));
 
 		introTimeout = setTimeout(() => { introDone = true; }, 500);
-		if (completeAtStart) { totalMs = 1; timeLeft = 0; liquidPct = '80.000vh'; makeBurst(); return; }
-		totalMs = Math.max(birthdayTimestamp - Date.now(), 1);
+		if (completeAtStart) {
+			timeLeft = 0;
+			liquidPct = '80.000vh';
+			makeBurst();
+			// Re-visiting after already passing: show the unlocked scene, then move on —
+			// never trap visitors on the timer page with no way forward.
+			unlockTimeout = setTimeout(() => onReady?.(), 1100);
+			startDrain();
+			advanceTimeout = setTimeout(() => onAutoProceed?.(), 4000);
+			return;
+		}
 		countUp();
 		if (!unlocked) intervalId = setInterval(countUp, 1000);
 		if (typeof requestAnimationFrame === 'function') rafId = requestAnimationFrame(tickFill);

@@ -31,6 +31,8 @@
 				{icon: '☀️', text: 'Slow morning', sub: 'coffee, soft light, zero rush'},
 				{icon: '☕', text: 'Good breakfast', sub: 'fresh coffee and something chocolate-y'},
 				{icon: '🌿', text: 'Get outside', sub: 'fresh air with a thermos of cocoa'},
+				{icon: '💌', text: 'Presents in bed', sub: 'cards and gifts before the day goes anywhere'},
+				{icon: '🛌', text: 'Sleep in', sub: 'phone on silent, to-dos politely ignored'},
 			],
 		},
 		{
@@ -41,6 +43,8 @@
 				{icon: '🎨', text: 'Something creative', sub: 'make something only you could'},
 				{icon: '🗺️', text: 'Somewhere new', sub: 'a place you have never been'},
 				{icon: '🛋️', text: 'Absolutely nothing', sub: 'guilt-free, gorgeous nothing'},
+				{icon: '📚', text: 'Book & a blanket', sub: 'words, warmth, nobody needing you'},
+				{icon: '📸', text: 'Memory hunt', sub: 'your favorite corners, candid shots, the day on film'},
 			],
 		},
 		{
@@ -51,6 +55,8 @@
 				{icon: '🍰', text: 'Treat time', sub: 'cake, chocolate and everything sweet'},
 				{icon: '🏞️', text: 'A little adventure', sub: 'explore with hot chocolate refills'},
 				{icon: '🎈', text: 'Lazy sunshine', sub: 'picnic naps and favorite people'},
+				{icon: '🍿', text: 'Cozy matinee', sub: 'blanket, snacks, a film you keep rewatching'},
+				{icon: '🧁', text: 'Bake something silly', sub: 'loud music, flour everywhere, better than store-bought'},
 			],
 		},
 {
@@ -62,6 +68,8 @@
 					{icon: '🗝️', text: 'Mystery room escape', sub: 'puzzles, riddles, a secret to unlock'},
 					{icon: '🌙', text: 'Quiet and cozy', sub: 'blankets, tea, soft and warm'},
 					{icon: '🌟', text: 'Dream about tomorrow', sub: 'smile at the year behind you'},
+					{icon: '🥂', text: 'Dinner with favorites', sub: 'good food, loud laughs, a late toast'},
+					{icon: '📵', text: 'Unplug before bed', sub: 'screens off, stars out, you and the quiet'},
 				],
 			},
 	];
@@ -74,7 +82,7 @@
 
 		if (stage < stages.length - 1) {
 			fadingOut = true;
-			transitionTimeout = setTimeout(() => { stage++; fadingOut = false; showingResult = false; }, 480);
+			transitionTimeout = setTimeout(() => { stage++; fadingOut = false; showingResult = false; }, 560);
 		} else {
 			showingResult = true;
 			fireConfetti();
@@ -84,7 +92,7 @@
 	function back() {
 		if (fadingOut || stage === 0) return;
 		fadingOut = true;
-		transitionTimeout = setTimeout(() => { stage--; fadingOut = false; showingResult = false; }, 480);
+		transitionTimeout = setTimeout(() => { stage--; fadingOut = false; showingResult = false; }, 560);
 	}
 
 	function replan() {
@@ -141,7 +149,7 @@
 	});
 </script>
 
-<div class="choose" class:fadeout={fadingOut}>
+<div class="choose">
 	<span class="sun"></span>
 	<span class="cloud c1"></span>
 	<span class="cloud c2"></span>
@@ -161,33 +169,39 @@
 				<button class="start-btn" onclick={() => { intro = false; }}>let's go ✨</button>
 			</div>
 		{:else}
-			<div class="content {introDone ? 'show' : ''}">
+			<div class="content {introDone ? 'show' : ''}" class:fadeout={fadingOut}>
 			<div class="steps">
 				{#each stages as _, i}
 					<span class="step {i <= stage ? 'done' : ''}"></span>
 				{/each}
 			</div>
 
-			<p class="tag">{currentStage.phase} · step {stage + 1} of {stages.length}</p>
-			<h2 class="question">{currentStage.title}</h2>
+			{#key stage}
+				<div class="stage-block">
+					<p class="tag">{currentStage.phase} · step {stage + 1} of {stages.length}</p>
+					<h2 class="question">{currentStage.title}</h2>
 
-			<div class="options theme-{currentStage.theme}">
-				{#each currentStage.choices as ch, i}
-					<button
-						class="option"
-						class:selected={hasSelection && selections[`s${stage}`] === i}
-						onclick={() => pick(i)}
-						aria-label={ch.text}
-					>
-						<span class="opt-icon">{ch.icon}</span>
-						<span class="opt-body">
-							<span class="opt-text">{ch.text}</span>
-							<span class="opt-sub">{ch.sub}</span>
-						</span>
-						<span class="opt-check">✓</span>
-					</button>
-				{/each}
-			</div>
+					<div class="options-scroller">
+						<div class="options theme-{currentStage.theme}">
+							{#each currentStage.choices as ch, i}
+								<button
+									class="option"
+									class:selected={hasSelection && selections[`s${stage}`] === i}
+									onclick={() => pick(i)}
+									aria-label={ch.text}
+								>
+									<span class="opt-icon">{ch.icon}</span>
+									<span class="opt-body">
+										<span class="opt-text">{ch.text}</span>
+										<span class="opt-sub">{ch.sub}</span>
+									</span>
+									<span class="opt-check">✓</span>
+								</button>
+							{/each}
+						</div>
+					</div>
+				</div>
+			{/key}
 
 			<div class="nav-row">
 				{#if stage > 0}
@@ -255,7 +269,7 @@
 		transition: opacity 0.48s ease;
 	}
 
-	.fadeout { opacity: 0; pointer-events: none; }
+	.content.fadeout { opacity: 0; pointer-events: none; }
 
 	.sun {
 		position: absolute; top: -70px; right: -70px;
@@ -320,6 +334,7 @@
 		position: relative; z-index: 3;
 		max-width: min(440px, 92vw);
 		width: 100%;
+		margin: auto;
 		text-align: center;
 		display: flex; flex-direction: column; align-items: center; gap: 1.2rem;
 		opacity: 0; transform: translateY(12px);
@@ -327,6 +342,27 @@
 	}
 
 	.content.show, .result.show { opacity: 1; transform: translateY(0); }
+
+	.stage-block {
+		width: 100%;
+		display: flex; flex-direction: column; align-items: center; gap: 1.2rem;
+		animation: stageIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both 0.05s;
+	}
+
+	@keyframes stageIn {
+		from { opacity: 0; transform: translateY(16px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.options-scroller {
+		width: 100%;
+		max-height: clamp(180px, 42vh, 430px);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: 0.15rem 0.2rem 0.7rem;
+		scrollbar-gutter: stable;
+		-webkit-overflow-scrolling: touch;
+	}
 
 	.steps { display: flex; gap: 0.45rem; }
 

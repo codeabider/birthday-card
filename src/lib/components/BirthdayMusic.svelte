@@ -1,35 +1,76 @@
+<script context="module">
+	let shared = null;
+	let activeCount = 0;
+	let persistedMuted = false;
+</script>
+
 <script>
 	import { onDestroy, onMount } from 'svelte';
-	import {
-		playBirthdayTune,
-		stopBirthdayTune,
-		setBirthdayMuted,
-		getBirthdayMuted,
-		isBirthdayTuneActive
-	} from '../birthdayTune.js';
 
-	let muted = $state(getBirthdayMuted());
-	let resumeHandler = () => playBirthdayTune();
+	const SRC = `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}the_mountain-happy-birthday-508020.mp3`;
+
+	let muted = $state(persistedMuted);
+
+	let pointerHandler = () => tryPlay();
+	let keyHandler = () => tryPlay();
+	let visHandler = () => {
+		if (document.hidden) shared?.pause();
+		else tryPlay();
+	};
+	let focusHandler = () => tryPlay();
+	let blurHandler = () => shared?.pause();
+	let pageShowHandler = () => {
+		if (!document.hidden) tryPlay();
+	};
+	let pageHideHandler = () => shared?.pause();
+	let beforeUnloadHandler = () => shared?.pause();
+
+	function tryPlay() {
+		if (!shared) return;
+		const p = shared.play();
+		if (p) p.catch(() => {});
+	}
 
 	function toggle() {
 		muted = !muted;
-		setBirthdayMuted(muted);
-		if (!muted) playBirthdayTune();
+		persistedMuted = muted;
+		if (shared) shared.muted = muted;
 	}
 
 	onMount(() => {
 		if (typeof window === 'undefined') return;
-		playBirthdayTune();
-		window.addEventListener('pointerdown', resumeHandler);
-		window.addEventListener('keydown', resumeHandler);
+		activeCount += 1;
+		if (!shared) {
+			shared = new Audio(SRC);
+			shared.loop = true;
+			shared.preload = 'auto';
+			shared.volume = 0.5;
+		}
+		muted = persistedMuted;
+		shared.muted = persistedMuted;
+		window.addEventListener('pointerdown', pointerHandler);
+		window.addEventListener('keydown', keyHandler);
+		document.addEventListener('visibilitychange', visHandler);
+		window.addEventListener('focus', focusHandler);
+		window.addEventListener('blur', blurHandler);
+		window.addEventListener('pagehide', pageHideHandler);
+		window.addEventListener('pageshow', pageShowHandler);
+		window.addEventListener('beforeunload', beforeUnloadHandler);
+		tryPlay();
 	});
 
 	onDestroy(() => {
-		if (typeof window !== 'undefined') {
-			window.removeEventListener('pointerdown', resumeHandler);
-			window.removeEventListener('keydown', resumeHandler);
-		}
-		stopBirthdayTune();
+		if (typeof window === 'undefined') return;
+		activeCount -= 1;
+		window.removeEventListener('pointerdown', pointerHandler);
+		window.removeEventListener('keydown', keyHandler);
+		document.removeEventListener('visibilitychange', visHandler);
+		window.removeEventListener('focus', focusHandler);
+		window.removeEventListener('blur', blurHandler);
+		window.removeEventListener('pagehide', pageHideHandler);
+		window.removeEventListener('pageshow', pageShowHandler);
+		window.removeEventListener('beforeunload', beforeUnloadHandler);
+		if (activeCount <= 0 && shared) shared.pause();
 	});
 </script>
 

@@ -1,13 +1,20 @@
 <script>
-	import {onDestroy, onMount} from 'svelte';
-	import {getFlow} from '$lib/flow.svelte.js';
+	import { onDestroy, onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { base } from '$app/paths';
+	import { getFlow } from '$lib/flow.svelte.js';
+	import CinematicSky from '$lib/components/CinematicSky.svelte';
 
 	let revealing = $state(false);
 	let linesOut = $state(0);
-	let sparklesArr = $state([]);
-	let falling = $state([]);
+	let timers = [];
 
 	const flow = getFlow();
+
+	function restart() {
+		flow.reset();
+		goto(base + '/');
+	}
 
 	function closingText() {
 		const ch = flow.choices;
@@ -55,24 +62,8 @@
 		closingText(),
 	];
 
-	let timers = [];
-
 	onMount(() => {
-		sparklesArr = Array.from({length: 46}, () => ({
-			x: Math.random() * 100,
-			y: Math.random() * 100,
-			sz: 1.5 + Math.random() * 3,
-			del: (Math.random() * 3).toFixed(2),
-			dur: (4 + Math.random() * 6).toFixed(2),
-		}));
-
-		falling = Array.from({length: 26}, () => ({
-			x: Math.random() * 100,
-			del: (1.5 + Math.random() * 4).toFixed(2),
-			dur: (6 + Math.random() * 8).toFixed(2),
-			sz: 3 + Math.random() * 4,
-		}));
-
+		if (typeof window === 'undefined') return;
 		timers = [
 			setTimeout(() => { revealing = true; }, 300),
 			setTimeout(() => { linesOut = 1; }, 1900),
@@ -87,273 +78,62 @@
 	});
 </script>
 
-<div class="final theme-{theme}">
-	<span class="aurora au1"></span>
-	<span class="aurora au2"></span>
+<div class="dusk">
+	<CinematicSky />
 
-	<svg class="warmth {revealing ? 'show' : ''}" viewBox="0 0 200 200" aria-hidden="true">
-		<circle cx="100" cy="100" r={40 + linesOut * 8} fill="none" stroke="rgba(244,200,180,0.15)" stroke-width="0.5"></circle>
-		<circle cx="100" cy="100" r={70 + linesOut * 10} fill="none" stroke="rgba(244,200,180,0.08)" stroke-width="0.3"></circle>
-	</svg>
+		<div class="center {revealing ? 'show' : ''}">
+			<h1 class="title show">
+				{#each titleWords as w, i}
+					<span class="tword {w.gold ? 'gold' : ''}" style="--d:{0.5 + 0.7 * i}s;">{w.text}</span>
+				{/each}
+			</h1>
 
-	<div class="orb-wrap">
-		<span class="orb {revealing ? 'big' : ''}"></span>
-		<svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
-			<circle class="ring-a" cx="100" cy="100" r="62" fill="none" stroke="rgba(244,213,200,0.22)" stroke-width="0.8" stroke-dasharray="1.5 7"></circle>
-			<circle class="ring-b" cx="100" cy="100" r="80" fill="none" stroke="rgba(200,150,120,0.14)" stroke-width="1" stroke-dasharray="14 18"></circle>
-			<circle class="summit" cx="100" cy="100" r="52" fill="none" stroke="rgba(255,214,120,0.35)" stroke-width="0.6" stroke-dasharray="1 5"></circle>
-		</svg>
-	</div>
+			{#if linesOut >= 1}
+				<div class="festoon" aria-hidden="true">
+					<span class="rule"></span>
+					<span class="diamond">✦</span>
+					<span class="rule"></span>
+				</div>
+			{/if}
 
-	{#each sparklesArr as sp}
-		<span class="sp" style="--x:{sp.x}%;--y:{sp.y}%;width:{sp.sz}px;height:{sp.sz}px;--delay:{sp.del}s;--dur:{sp.dur}s;"></span>
-	{/each}
+			{#if linesOut >= 1}
+				<div class="wishes">
+					<p class="wish" style="--d:0s;">{lines[0]}<br/>{lines[1]}</p>
+					{#if linesOut >= 2}<p class="wish" style="--d:0.35s;">{lines[2]}</p>{/if}
+					{#if linesOut >= 2}<p class="wish last" style="--d:0.7s;">{lines[3]}</p>{/if}
+				</div>
+			{/if}
 
-	{#each falling as fl}
-		<span class="sparkle" style="--x:{fl.x}%;width:{fl.sz}px;--delay:{fl.del}s;--dur:{fl.dur}s;"></span>
-	{/each}
+			{#if linesOut >= 3}
+				<div class="heart-wrap show" aria-hidden="true">
+					<span class="halo"></span>
+					<span class="side treat-left">{themeEmoji[theme][0]}</span>
+					<span class="side treat-right">{themeEmoji[theme][1]}</span>
+					<svg width="30" height="28" viewBox="0 0 28 26" fill="none">
+						<path d="M14 24.5C14 24.5 2 16.5 2 9.5C2 5.5 5 3 8.5 3C10.8 3 13 4.5 14 6.5C15 4.5 17.2 3 19.5 3C23 3 26 5.5 26 9.5C26 16.5 14 24.5 14 24.5Z" fill="rgba(244,200,180,0.45)" />
+					</svg>
+				</div>
+			{/if}
 
-	<span class="shoot shoot-1" aria-hidden="true"></span>
-	<span class="shoot shoot-2" aria-hidden="true"></span>
-
-	<div class="center {revealing ? 'show' : ''}">
-		<h1 class="title show">
-			{#each titleWords as w, i}
-				<span class="tword {w.gold ? 'gold' : ''}" style="--d:{0.5 + 0.7 * i}s;">{w.text}</span>
-			{/each}
-		</h1>
-
-		{#if linesOut >= 1}
-			<div class="festoon" aria-hidden="true">
-				<span class="rule"></span>
-				<span class="diamond">✦</span>
-				<span class="rule"></span>
-			</div>
-		{/if}
-
-		{#if linesOut >= 1}
-			<div class="wishes">
-				<p class="wish" style="--d:0s;">{lines[0]}<br/>{lines[1]}</p>
-				{#if linesOut >= 2}<p class="wish" style="--d:0.35s;">{lines[2]}</p>{/if}
-				{#if linesOut >= 2}<p class="wish last" style="--d:0.7s;">{lines[3]}</p>{/if}
-			</div>
-		{/if}
-
-		{#if linesOut >= 3}
-			<div class="heart-wrap show" aria-hidden="true">
-				<span class="halo"></span>
-				<span class="side treat-left">{themeEmoji[theme][0]}</span>
-				<span class="side treat-right">{themeEmoji[theme][1]}</span>
-				<svg width="30" height="28" viewBox="0 0 28 26" fill="none">
-					<path d="M14 24.5C14 24.5 2 16.5 2 9.5C2 5.5 5 3 8.5 3C10.8 3 13 4.5 14 6.5C15 4.5 17.2 3 19.5 3C23 3 26 5.5 26 9.5C26 16.5 14 24.5 14 24.5Z" fill="rgba(244,200,180,0.45)" />
-				</svg>
-			</div>
-		{/if}
-
-		{#if linesOut >= 4}<p class="end-mark">✦ that's everything</p>{/if}
-	</div>
+			{#if linesOut >= 4}
+				<p class="end-mark">✦ that's everything</p>
+				<button class="restart-btn" onclick={restart} aria-label="Start the whole experience over">↺ from the top</button>
+			{/if}
+		</div>
 </div>
 
 <style>
-	.final {
+	.dusk {
 		position: fixed;
 		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		background:
-			radial-gradient(ellipse at 50% 32%, rgba(206,126,64,0.26) 0%, transparent 60%),
-			radial-gradient(ellipse at 50% 110%, rgba(120,58,60,0.22) 0%, transparent 55%),
-			linear-gradient(180deg, #2a1a10 0%, #160e08 70%, #0f0803 100%);
 		overflow: hidden;
+		background:
+			radial-gradient(ellipse at 50% 42%, rgba(255, 180, 120, 0.1) 0%, transparent 46%),
+			radial-gradient(ellipse at 50% 118%, rgba(120, 140, 210, 0.1) 0%, transparent 55%),
+			linear-gradient(180deg, #060a15 0%, #0a1122 55%, #0d1526 100%);
 	}
 
-	.aurora {
-		position: absolute;
-		border-radius: 50%;
-		filter: blur(70px);
-		pointer-events: none;
-	}
-
-	.au1 {
-		width: 62vmin;
-		height: 62vmin;
-		top: -18vmin;
-		left: -12vmin;
-		background: radial-gradient(circle, rgba(238,208,164,0.18) 0%, rgba(200,140,90,0.06) 55%, transparent 62%);
-		animation: au1 11s ease-in-out infinite alternate;
-	}
-
-	.au2 {
-		width: 70vmin;
-		height: 70vmin;
-		bottom: -22vmin;
-		right: -16vmin;
-		background: radial-gradient(circle, rgba(140,110,180,0.12) 0%, transparent 62%);
-		animation: au2 14s ease-in-out infinite alternate;
-	}
-
-	@keyframes au1 {
-		0%, 100% { transform: translate(0, 0) scale(1); }
-		50% { transform: translate(9vmin, 5vmin) scale(1.15); }
-	}
-
-	@keyframes au2 {
-		0%, 100% { transform: translate(0, 0) scale(1.1); }
-		50% { transform: translate(-10vmin, -6vmin) scale(0.95); }
-	}
-
-	.warmth {
-		position: absolute;
-		width: min(500px, 94vw);
-		height: min(500px, 94vw);
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -58%);
-		opacity: 0;
-		transition: opacity 2s ease;
-	}
-
-	.warmth.show {
-		opacity: 1;
-	}
-
-	.orb-wrap {
-		position: absolute;
-		top: 22%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: min(160px, 38vw);
-		height: min(160px, 38vw);
-		pointer-events: none;
-	}
-
-	.orb {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		width: min(62px, 15vw);
-		height: min(62px, 15vw);
-		border-radius: 50%;
-		transform: translate(-50%, -50%);
-		background: radial-gradient(circle at 32% 32%, #f7dfb4 0%, #d8a36e 50%, #a9744f 100%);
-		box-shadow: 0 0 34px 10px rgba(230,178,120,0.28), 0 0 90px 20px rgba(200,140,90,0.14);
-		transition: transform 2s ease, box-shadow 2s ease;
-	}
-
-	.orb.big {
-		transform: translate(-50%, -50%) scale(1.55);
-		box-shadow: 0 0 52px 20px rgba(235,180,120,0.4), 0 0 120px 40px rgba(200,140,90,0.18);
-	}
-
-	.ring {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		opacity: 0;
-		transform: rotate(-18deg);
-		animation: ringFade 2.4s ease forwards 0.6s;
-	}
-
-	@keyframes ringFade {
-		to { opacity: 1; }
-	}
-
-	.ring-a,
-	.ring-b,
-	.summit {
-		transform-origin: 100px 100px;
-	}
-
-	.ring-a {
-		animation: spinCw 24s linear infinite;
-	}
-
-	.ring-b {
-		animation: spinCcw 32s linear infinite;
-	}
-
-	.summit {
-		animation: spinCw 14s linear infinite;
-	}
-
-	@keyframes spinCw {
-		to { transform: rotate(360deg); }
-	}
-
-	@keyframes spinCcw {
-		to { transform: rotate(-360deg); }
-	}
-
-	.sp {
-		position: absolute;
-		left: var(--x);
-		top: var(--y);
-		border-radius: 50%;
-		background: rgba(244,213,200,0.6);
-		animation: twk var(--dur) ease-in-out infinite var(--delay);
-	}
-
-	@keyframes twk { 0%,100% { opacity: 0.12; } 50% { opacity: 0.4; } }
-
-	.sparkle {
-		position: absolute;
-		left: var(--x);
-		width: var(--sz);
-		height: calc(var(--sz) / 2);
-		background: rgba(255,228,210,0.35);
-		border-radius: 50%;
-		animation: driftDown var(--dur) ease-out forwards calc(var(--delay) + 2s);
-		opacity: 0;
-	}
-
-	@keyframes driftDown {
-		0% { transform: translateY(0); opacity: 0; }
-		15% { opacity: 0.6; }
-		70% { opacity: 0.3; }
-		100% { transform: translateY(110vh); opacity: 0; }
-	}
-
-	.shoot {
-		position: absolute;
-		width: 130px;
-		height: 1.5px;
-		border-radius: 2px;
-		background: linear-gradient(90deg, rgba(255,255,255,0.75), transparent);
-		opacity: 0;
-		pointer-events: none;
-	}
-
-	.shoot-1 {
-		top: 16%;
-		left: 68%;
-		transform: rotate(-38deg);
-		animation: shootFly 7s ease-in-out infinite 2.5s;
-	}
-
-	.shoot-2 {
-		top: 58%;
-		left: 14%;
-		transform: rotate(-42deg);
-		animation: shootFly2 9s ease-in-out infinite 6s;
-	}
-
-	@keyframes shootFly {
-		0% { opacity: 0; transform: translate(0, 0) rotate(-38deg); }
-		3% { opacity: 0.8; }
-		10% { opacity: 0; transform: translate(-42vw, 32vh) rotate(-38deg); }
-		100% { opacity: 0; transform: translate(-42vw, 32vh) rotate(-38deg); }
-	}
-
-	@keyframes shootFly2 {
-		0% { opacity: 0; transform: translate(0, 0) rotate(-42deg); }
-		3% { opacity: 0.7; }
-		10% { opacity: 0; transform: translate(-40vw, 30vh) rotate(-42deg); }
-		100% { opacity: 0; transform: translate(-40vw, 30vh) rotate(-42deg); }
-	}
-
+	/* text overlay */
 	.center {
 		position: relative;
 		z-index: 2;
@@ -362,9 +142,9 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 1.6rem;
-		margin-top: clamp(56px, 16vh, 200px);
-		min-height: clamp(440px, 64vh, 640px);
-		padding-bottom: max(8vh, env(safe-area-inset-bottom), 40px);
+		margin-top: clamp(52px, 15vh, 170px);
+		min-height: clamp(430px, 62vh, 620px);
+		padding-bottom: max(6vh, env(safe-area-inset-bottom), 32px);
 		opacity: 0;
 		transition: opacity 1.6s ease;
 	}
@@ -379,7 +159,7 @@
 		inset: -10% -14%;
 		z-index: -1;
 		border-radius: 50%;
-		background: radial-gradient(ellipse at center, rgba(10, 8, 16, 0.62), transparent 70%);
+		background: radial-gradient(ellipse at center, rgba(6, 10, 21, 0.66), transparent 70%);
 		filter: blur(30px);
 	}
 
@@ -393,7 +173,7 @@
 		display: inline-block;
 		margin-right: 0.32em;
 		color: #ffead9;
-		text-shadow: 0 2px 22px rgba(8, 6, 14, 0.7);
+		text-shadow: 0 2px 22px rgba(6, 8, 18, 0.8);
 		opacity: 0;
 		transform: translateY(22px) scale(0.95);
 		animation: twordIn 1.35s cubic-bezier(0.22, 0.61, 0.36, 1) forwards var(--d);
@@ -465,8 +245,8 @@
 		font-size: clamp(1.05rem, 4vw, 1.3rem);
 		font-family: 'Playfair Display', Georgia, serif;
 		font-style: italic;
-		color: rgba(250, 234, 222, 0.85);
-		text-shadow: 0 1px 16px rgba(8, 6, 14, 0.55);
+		color: rgba(252, 238, 224, 0.85);
+		text-shadow: 0 1px 16px rgba(6, 8, 18, 0.7);
 		line-height: 1.7;
 		opacity: 0;
 		transform: translateY(10px);
@@ -474,7 +254,7 @@
 	}
 
 	.wish.last {
-		color: rgba(246, 217, 173, 0.95);
+		color: rgba(255, 221, 178, 0.95);
 		margin-top: 0.4rem;
 	}
 
@@ -500,7 +280,7 @@
 		inset: -10px;
 		border-radius: 50%;
 		background: radial-gradient(circle, rgba(244,200,180,0.28) 0%, transparent 68%);
-		animation: haloPulse 2.6s ease-in-out infinite;
+		animation: haloPulseH 2.6s ease-in-out infinite;
 	}
 
 	@keyframes heartPulse {
@@ -508,7 +288,7 @@
 		50% { transform: scale(1.1); }
 	}
 
-	@keyframes haloPulse {
+	@keyframes haloPulseH {
 		0%,100% { opacity: 0.4; }
 		50% { opacity: 0.9; }
 	}
@@ -540,18 +320,39 @@
 		font-size: 0.6rem;
 		letter-spacing: 0.3em;
 		text-transform: uppercase;
-		color: rgba(246,217,173,0.4);
+		color: rgba(255,221,178,0.45);
 		opacity: 0;
 		animation: wishAppear 0.9s ease 0.6s forwards;
 	}
 
+	.restart-btn {
+		margin-top: 0.6rem;
+		font-size: 0.6rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: rgba(255,221,178,0.55);
+		padding: 0.7rem 1.4rem;
+		border-radius: 100px;
+		border: 1px solid rgba(255,221,178,0.18);
+		background: rgba(6,10,21,0.35);
+		backdrop-filter: blur(8px);
+		cursor: pointer;
+		transition: color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.restart-btn:hover,
+	.restart-btn:focus-visible {
+		color: rgba(255,232,206,0.92);
+		border-color: rgba(255,221,178,0.42);
+		box-shadow: 0 0 22px rgba(255,190,130,0.22);
+	}
+
 	@media (prefers-reduced-motion: reduce) {
-		.sp, .aurora, .warmth, .heart-wrap, .heart-wrap .halo, .side, .tword, .tword.gold, .diamond, .ring, .ring-a, .ring-b, .summit, .shoot, .sparkle, .end-mark {
+		.tword, .tword.gold, .diamond, .heart-wrap, .heart-wrap .halo, .side {
 			animation: none !important;
 			opacity: 1;
 		}
-		.orb, .orb.big { transform: translate(-50%, -50%) scale(1.3); }
-		.center, .center.show { opacity: 1; }
-		.sparkle, .shoot { opacity: 0 !important; visibility: hidden; }
+		.center, .center.show { opacity: 1; transform: none; }
+		.wish, .end-mark, .restart-btn { animation: none; opacity: 1; }
 	}
 </style>
