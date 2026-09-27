@@ -40,11 +40,11 @@
 			phase: 'next',
 			theme: 'n',
 			choices: [
-				{icon: '🎨', text: 'Something creative', sub: 'make something only you could'},
-				{icon: '🗺️', text: 'Somewhere new', sub: 'a place you have never been'},
-				{icon: '🛋️', text: 'Absolutely nothing', sub: 'guilt-free, gorgeous nothing'},
-				{icon: '📚', text: 'Book & a blanket', sub: 'words, warmth, nobody needing you'},
-				{icon: '📸', text: 'Memory hunt', sub: 'your favorite corners, candid shots, the day on film'},
+				{icon: '🎨', text: 'Make something', sub: 'paint, bake, craft, whatever your hands want'},
+				{icon: '🗺️', text: 'Somewhere new', sub: 'a corner of the city you\u2019ve never given a real look'},
+				{icon: '🛋️', text: 'Absolutely nothing', sub: 'guilt-free, gorgeous, perfectly empty'},
+				{icon: '📚', text: 'Book & a blanket', sub: 'words, warmth, nobody needing anything from you'},
+				{icon: '📸', text: 'Memory hunt', sub: 'favourite corners, candid shots, the day on film'},
 			],
 		},
 		{
@@ -64,12 +64,12 @@
 				phase: 'evening',
 				theme: 'e',
 				choices: [
-					{icon: '🎉', text: 'A party with lights', sub: 'sparkles, music, happy noise'},
-					{icon: '🗝️', text: 'Mystery room escape', sub: 'puzzles, riddles, a secret to unlock'},
-					{icon: '🌙', text: 'Quiet and cozy', sub: 'blankets, tea, soft and warm'},
-					{icon: '🌟', text: 'Dream about tomorrow', sub: 'smile at the year behind you'},
-					{icon: '🥂', text: 'Dinner with favorites', sub: 'good food, loud laughs, a late toast'},
-					{icon: '📵', text: 'Unplug before bed', sub: 'screens off, stars out, you and the quiet'},
+					{icon: '🎉', text: 'Something sparkly', sub: 'lights, music, loud happy noise'},
+					{icon: '🗝️', text: 'Mystery hour', sub: 'a puzzle, a riddle, something to solve'},
+					{icon: '🌙', text: 'Quiet & cosy', sub: 'blankets, a warm drink, slow and soft'},
+					{icon: '🌟', text: 'Dream about tomorrow', sub: 'wink at the year that\u2019s coming'},
+					{icon: '🥂', text: 'Dinner, your call', sub: 'favourite place or favourite order, no compromises'},
+					{icon: '📵', text: 'Unplug before bed', sub: 'screens off, wind down, soft and dark'},
 				],
 			},
 	];
@@ -163,10 +163,10 @@
 	{#if !showingResult}
 		{#if intro}
 			<div class="content {introDone ? 'show' : ''}">
-				<p class="tag">before we begin</p>
+				<p class="tag">before you begin</p>
 				<h2 class="question intro-line">okay. it's your day.</h2>
-				<p class="intro-sub">let's build it — a morning, an afternoon, an evening. all yours.</p>
-				<button class="start-btn" onclick={() => { intro = false; }}>let's go ✨</button>
+				<p class="intro-sub">you build it: a morning, an afternoon, an evening. all yours, no wrong answers.</p>
+				<button class="start-btn" onclick={() => { intro = false; }}>start planning ✨</button>
 			</div>
 		{:else}
 			<div class="content {introDone ? 'show' : ''}" class:fadeout={fadingOut}>
@@ -244,7 +244,7 @@
 				<p class="plan-line">{planText}</p>
 			{/if}
 
-			<p class="wish-line">psst — I wish I could be right there with you ✨</p>
+			<p class="wish-line">psst! I wish I could be right there with you ✨</p>
 
 			{#if planText}
 				<button class="go-btn" onclick={() => nav?.advance?.()}>that sounds like a good day →</button>

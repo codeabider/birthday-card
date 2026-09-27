@@ -160,7 +160,7 @@
 </script>
 
 {#if !unlocked}
-<div class="gate {hot ? 'hot' : ''}" role="status" aria-label="a mug of coffee held close — froth on top, warm brew below">
+<div class="gate {hot ? 'hot' : ''}" role="status" aria-label="a mug of coffee held close, froth on top, warm brew below">
 	<div class="scene" aria-hidden="true">
 		<div class="space">
 			{#each stars as st}
@@ -228,7 +228,7 @@
 	{/each}
 
 	<div class="content show">
-		<p class="tagline time-up">it's time</p>
+		<p class="tagline time-up">it's your time</p>
 	</div>
 </div>
 {/if}

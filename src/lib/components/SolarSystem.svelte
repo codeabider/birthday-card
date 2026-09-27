@@ -14,8 +14,10 @@
 		opacity: 0.05 + (i % 4) * 0.04,
 	}));
 
-	let scale = $state(1);
 	let startAngles = $state([]);
+	let moonStartAngle = $state(0);
+	let planetRefs = $state([]);
+	let moonRef = $state(null);
 	let selectedBody = $state(null);
 	let showingCard = $state(false);
 	let containerRef = $state(null);
@@ -24,10 +26,75 @@
 	let exploredIds = $state(new Set(initialIds));
 	let mediaQuery;
 	let cardTimers = [];
+	let animFrame = 0;
+	let animStart = 0;
+	let running = false;
+	const MOON_ORBIT_S = 16;
+	const MOON_ORBIT_R = 34;
+	const ORBIT_MAX = 356;
+	const ORBIT_PAD = 18;
 	const bodyIds = new Set([...initialPlanets.map((planet) => planet.id), initialSun.id, initialMoon.id]);
 
 	function handleMotionPreference(event) {
 		prefersReducedMotion = event.matches;
+		if (prefersReducedMotion) {
+			stopLoop();
+			placeStatic();
+		} else {
+			startLoop();
+		}
+	}
+
+	function layoutFactors() {
+		const viewW = window.innerWidth;
+		const viewH = window.innerHeight;
+		const sx = Math.min(Math.max((viewW / 2 - ORBIT_PAD) / ORBIT_MAX, 0.35), 1.4);
+		const sy = Math.min(Math.max((viewH * 0.4 - ORBIT_PAD) / ORBIT_MAX, 0.35), 1.9);
+		return {sx, sy};
+	}
+
+	function applyPositions(t) {
+		const {sx, sy} = layoutFactors();
+		const earthIdx = initialPlanets.findIndex((planet) => planet.id === 'earth');
+		let earthX = 0, earthY = 0;
+		initialPlanets.forEach((planet, i) => {
+			const rad = ((startAngles[i] + (t * 360) / planet.orbitSpeed) * Math.PI) / 180;
+			const x = planet.orbitRadius * sx * Math.cos(rad);
+			const y = planet.orbitRadius * sy * Math.sin(rad);
+			const ref = planetRefs[i];
+			if (ref) ref.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+			if (i === earthIdx) { earthX = x; earthY = y; }
+		});
+		const mrad = ((moonStartAngle + (t * 360) / MOON_ORBIT_S) * Math.PI) / 180;
+		const mx = MOON_ORBIT_R * sx * Math.cos(mrad);
+		const my = MOON_ORBIT_R * sy * Math.sin(mrad);
+		if (moonRef) moonRef.style.transform = `translate(${earthX + mx}px, ${earthY + my}px) translate(-50%, -50%)`;
+	}
+
+	function placeStatic() {
+		applyPositions(0);
+	}
+
+	function startLoop() {
+		if (running) return;
+		running = true;
+		animStart = 0;
+		applyPositions(0);
+		if (prefersReducedMotion) return;
+		animFrame = requestAnimationFrame(animate);
+	}
+
+	function stopLoop() {
+		running = false;
+		if (animFrame) cancelAnimationFrame(animFrame);
+		animFrame = 0;
+	}
+
+	function animate(now) {
+		if (!running || prefersReducedMotion) return;
+		if (animStart === 0) animStart = now;
+		applyPositions((now - animStart) / 1000);
+		animFrame = requestAnimationFrame(animate);
 	}
 
 	function clearCardTimers() {
@@ -40,24 +107,20 @@
 		prefersReducedMotion = mediaQuery.matches;
 		mediaQuery.addEventListener('change', handleMotionPreference);
 
-		// random starting position around each orbit, once per mount
 		startAngles = initialPlanets.map(() => Math.random() * 360);
+		moonStartAngle = Math.random() * 360;
 
 		onProgress?.(exploredIds);
 
 		await tick();
 
-		const viewW = window.innerWidth;
-		const viewH = window.innerHeight;
-		const shortest = Math.min(viewW, viewH);
-		const orbitMax = 339;
-		const fitScale = (shortest / 2 - 8) / orbitMax;
-		scale = Math.min(fitScale, 1.35);
+		startLoop();
 	});
 
 	onDestroy(() => {
 		mediaQuery?.removeEventListener('change', handleMotionPreference);
 		clearCardTimers();
+		stopLoop();
 	});
 
 	function handleTap(body) {
@@ -93,8 +156,8 @@
 		<span class="bg-star" style="--sx:{star.x}vw;--sy:{star.y}vh;--sdur:{star.duration}s;--sdel:{star.delay}s;--sop:{star.opacity};"></span>
 	{/each}
 
-	<!-- Orbit system, scaled -->
-	<div class="orbit-system" style="transform: scale({scale});">
+	<!-- Orbit system -->
+	<div class="orbit-system">
 
 		<!-- Sun at center -->
 		<button
@@ -109,16 +172,13 @@
 
 		<!-- Planets -->
 		{#each planets as planet, i}
-			<div
-				class="orbit-body"
-				style="--radius:{planet.orbitRadius}px;--speed:{planet.orbitSpeed}s;--start:{startAngles[i] ?? 0}deg;"
-				role="presentation"
-			>
+			<div class="orbit-body" role="presentation">
 				<button
 					class="planet-body"
+					bind:this={planetRefs[i]}
 					aria-label={`${planet.name}. ${planet.text}`}
 					onclick={() => handleTap(planet)}
-					style="width:{planet.size}px;height:{planet.size}px;"
+					style="--visual:{planet.size}px;{planet.surface ? `--surf:${planet.surface};` : ''}"
 				>
 					<span class="planet-surface" style="--col:{planet.color};--glow:{planet.glowColor};"></span>
 					{#if planet.rings}
@@ -128,16 +188,15 @@
 
 				<!-- Moon orbits Earth -->
 				{#if planet.id === 'earth'}
-					<div class="moon-orbit" style="--speed:12s;">
-						<button
-							class="moon-body"
-							aria-label={`Moon. ${moon.text}`}
-							onclick={() => handleTap(moon)}
-							style="width:{moon.size}px;height:{moon.size}px;"
-						>
-							<span class="planet-surface" style="--col:{moon.color};--glow:{moon.glowColor};"></span>
-						</button>
-					</div>
+					<button
+						class="moon-body"
+						bind:this={moonRef}
+						aria-label={`Moon. ${moon.text}`}
+						onclick={() => handleTap(moon)}
+						style="--visual:{moon.size}px;"
+					>
+						<span class="planet-surface" style="--col:{moon.color};--glow:{moon.glowColor};"></span>
+					</button>
 				{/if}
 			</div>
 		{/each}
@@ -146,9 +205,9 @@
 	<!-- Hint text -->
 	<p class="hint" class:hide={selectedBody !== null}>
 		{exploredIds.size === 0
-			? 'See what they say about you...'
+			? 'tap a planet: each one knows something about you'
 			: exploredIds.size < 4
-				? 'tap a few more to continue...'
+				? 'a few more to go...'
 				: 'the system is awake!'}
 	</p>
 
@@ -165,7 +224,7 @@
 	>
 		<span class="card-inner" role="status">
 			{#if selectedBody}
-				<div class="card-orb" style="--col:{selectedBody.color};--glow:{selectedBody.glowColor};width:{selectedBody.size * 1.6}px;height:{selectedBody.size * 1.6}px;">
+				<div class="card-orb" style="--col:{selectedBody.color};--glow:{selectedBody.glowColor};width:{selectedBody.size * 1.6}px;height:{selectedBody.size * 1.6}px;{selectedBody.surface ? `--surf:${selectedBody.surface};` : ''}">
 					{#if selectedBody.id === 'sun'}
 						<div class="sun-core small"></div>
 					{/if}
@@ -210,9 +269,9 @@
 
 	.orbit-system {
 		position: relative;
-		width: 720px;
-		height: 720px;
-		transform-origin: center center;
+		width: 100%;
+		height: 100%;
+		transform: translateY(10vh);
 	}
 
 	/* Sun at center */
@@ -225,7 +284,8 @@
 		height: 80px;
 		border-radius: 50%;
 		z-index: 10;
-		padding: 0;
+		padding: 7px;
+		box-sizing: content-box;
 	}
 
 	.sun-core {
@@ -252,83 +312,92 @@
 		50% { transform: scale(1.12); opacity: 0.8; }
 	}
 
-	/* Orbit spinner containers */
+	/* Orbit anchors: planets are positioned each frame on elliptical paths */
 	.orbit-body {
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		width: calc(var(--radius) * 2);
-		height: calc(var(--radius) * 2);
-		margin-top: calc(var(--radius) * -1);
-		margin-left: calc(var(--radius) * -1);
-		border-radius: 50%;
-		animation: orbitSpin var(--speed) linear infinite;
+		width: 0;
+		height: 0;
 		pointer-events: none;
 	}
 
-	@keyframes orbitSpin {
-		from { transform: rotate(var(--start, 0deg)); }
-		to { transform: rotate(calc(var(--start, 0deg) + 360deg)); }
-	}
-
-	/* Planet positioned at top of orbit ring */
+	/* Planet positioned at its ellipse point; the button is a fixed invisible
+	   tap target that keeps the visual sized by --visual */
 	.planet-body {
 		position: absolute;
-		top: 0;
+		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		border-radius: 50%;
 		z-index: 5;
 		padding: 0;
 		pointer-events: auto;
 		touch-action: manipulation;
+		will-change: transform;
 	}
 
 	.planet-surface {
 		display: block;
-		width: 100%;
-		height: 100%;
+		width: var(--visual, 100%);
+		height: var(--visual, 100%);
 		border-radius: 50%;
-		background: radial-gradient(circle at 32% 32%, #fff6 0%, var(--col) 40%, color-mix(in srgb, var(--col) 70%, #000) 100%);
-		box-shadow: 0 0 16px 4px var(--glow);
+		background: var(--surf, radial-gradient(circle at 32% 32%, #fff6 0%, var(--col) 40%, color-mix(in srgb, var(--col) 70%, #000) 100%));
+		box-shadow: 0 0 12px 3px var(--glow);
 	}
 
-	/* Saturn's rings */
+	/* Saturn's rings, sized relative to the planet visual */
 	.planet-ring {
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		width: 160%;
-		height: 30%;
-		margin-top: -15%;
-		margin-left: -80%;
+		width: calc(var(--visual, 16px) * 1.2);
+		height: calc(var(--visual, 16px) * 0.32);
+		margin-left: calc(var(--visual, 16px) * 0.6 * -1);
+		margin-top: calc(var(--visual, 16px) * 0.16 * -1);
 		border-radius: 50%;
-		border: 2px solid rgba(232,212,170,0.4);
 		transform: rotate(-20deg);
+		pointer-events: none;
+		border: 3px solid rgba(238,219,180,0.6);
+		box-shadow: 0 0 8px rgba(238,219,180,0.3);
 	}
 
-	/* Moon orbit around Earth */
-	.moon-orbit {
+	.planet-ring:after {
 		position: absolute;
-		top: 0;
+		top: 50%;
 		left: 50%;
-		width: 50px;
-		height: 50px;
-		margin-top: -25px;
-		margin-left: -25px;
-		animation: orbitSpin var(--speed) linear infinite;
+		width: calc(var(--visual, 16px) * 1.2);
+		height: calc(var(--visual, 16px) * 0.32);
+		margin-left: calc(var(--visual, 16px) * 0.6 * -1);
+		margin-top: calc(var(--visual, 16px) * 0.16 * -1);
+		border-radius: 50%;
+		content: '';
+		border: 2px solid rgba(238,219,180,0.35);
+		transform: scale(0.76);
 	}
 
+	/* Moon orbits Earth, positioned by JS on its own small ellipse */
 	.moon-body {
 		position: absolute;
-		top: 10%;
+		top: 50%;
 		left: 50%;
-		transform: translateX(-50%);
+		transform: translate(-50%, -50%);
+		width: 36px;
+		height: 36px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		border-radius: 50%;
 		z-index: 6;
 		padding: 0;
 		pointer-events: auto;
 		touch-action: manipulation;
+		will-change: transform;
 	}
 
 	/* Hint */
@@ -348,7 +417,10 @@
 		font-weight: 400;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
-		white-space: nowrap;
+		white-space: normal;
+		text-align: center;
+		line-height: 1.35;
+		max-width: min(78vw, 340px);
 		color: rgba(244,213,200,0.92);
 		animation: hintPulse 3s ease-in-out infinite;
 		transition: opacity 0.6s ease;
@@ -398,7 +470,7 @@
 
 	.card-orb {
 		border-radius: 50%;
-		background: radial-gradient(circle at 32% 32%, #fff6 0%, var(--col) 40%, color-mix(in srgb, var(--col) 60%, #111) 100%);
+		background: var(--surf, radial-gradient(circle at 32% 32%, #fff6 0%, var(--col) 40%, color-mix(in srgb, var(--col) 60%, #111) 100%));
 		box-shadow: 0 0 40px 12px var(--glow), 0 0 80px 24px var(--glow);
 		transition: transform 0.5s ease;
 	}
@@ -437,7 +509,6 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.orbit-body, .moon-orbit { animation: none !important; }
 		.bg-star { animation: none !important; opacity: 0.15 !important; }
 		.sun-corona { animation: none !important; }
 	}

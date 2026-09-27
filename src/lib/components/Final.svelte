@@ -19,24 +19,24 @@
 	function closingText() {
 		const ch = flow.choices;
 		const ready = ['s0', 's1', 's2', 's3'].every((key) => Number.isInteger(ch[key]));
-		const fallback = "now go have chocolate and coffee \u2014 you've earned them";
+		const fallback = 'and a whole year that\u2019s kinder to you than you expect. happy birthday.';
 		if (!ready) return fallback;
 		const morning = ch.s0, next = ch.s1, afternoon = ch.s2, evening = ch.s3;
-		if (evening === 1) return 'may the mystery room be breezy and the escape extra quick \u2014 chocolate to celebrate afterward, obviously';
-		if (evening === 0) return 'dance like the candles might never melt \u2014 and refill the mug when it cools';
-		if (next === 1 || afternoon === 1) return 'go claim every adventure \u2014 a thermos of cocoa in one hand, courage in the other';
-		if (next === 2) return 'may the nothing be luxurious, the coffee slow, and the chocolate endless';
-		if (afternoon === 0) return 'more chocolate than a person technically needs \u2014 and you have earned every single piece';
-		if (morning === 1) return 'a beautiful breakfast and a full mug \u2014 the whole year should start like this';
-		if (evening === 2) return 'blankets warm, mug close, world quiet \u2014 a perfect way to end the day';
-		if (evening === 3) return 'wake up smiling \u2014 tomorrow is already going to be good';
+		if (evening === 1) return 'may the mystery be fun and the answer quick, then let yourself celebrate it loudly. happy birthday.';
+		if (evening === 0) return 'dance like nobody\u2019s counting, and let this year keep giving you reasons to. happy birthday.';
+		if (next === 1 || afternoon === 1) return 'go take that adventure: may every small detour this year be worth it. happy birthday.';
+		if (next === 2) return 'may the nothing be luxurious and exactly what you needed. happy birthday.';
+		if (afternoon === 0) return 'may this year save you plenty of sweet treats, and plenty of reasons to deserve them. happy birthday.';
+		if (morning === 1) return 'may your mornings keep starting slow, and yours. happy birthday.';
+		if (evening === 2) return 'blankets warm, world quiet, and the whole year gentle with you. happy birthday.';
+		if (evening === 3) return 'may you keep dreaming easy: tomorrow is already holding something good. happy birthday.';
 		return fallback;
 	}
 
 	const themeEmoji = {
-		warm: ['☕', '🍫'],
+		warm: ['🌞', '🧡'],
 		party: ['🥳', '🎉'],
-		mystery: ['🕵️', '🔎'],
+		mystery: ['🗝️', '🔎'],
 		cozy: ['🧸', '🕯️'],
 		dream: ['🌠', '✨'],
 	};
@@ -56,9 +56,9 @@
 	];
 
 	const lines = [
-		'may this year bring you everything',
-		'you deserve and more',
-		"and you've earned it",
+		'you\u2019ve shared some parts of yourself already',
+		'they\u2019re the kind of parts people are lucky to know',
+		'and the parts still left to show are the best kind of gift',
 		closingText(),
 	];
 

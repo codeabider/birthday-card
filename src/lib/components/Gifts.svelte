@@ -7,47 +7,57 @@
 
 	const feelings = [
 		{
-			text: 'a midnight brew',
-			emoji: '☕',
-			hint: 'steam & patience',
-			vibe: 'slow pour, second cup',
-			accent: '#8a5a2b',
-			kind: 'playful',
-			title: 'a french-press kinda love',
-			body: 'some things are worth the slow pour. your year: one part dark roast, one part dark chocolate, and the rest is all you — honestly, that ratio is perfect.',
-		},
-		{
-			text: 'dark & reckless',
-			emoji: '🍫',
-			hint: '90% cocoa. handle with care',
-			vibe: 'a little sin, a little sweetness',
-			accent: '#6b3420',
-			kind: 'playful',
-			title: 'for the sweetest darkness',
-			body: 'midnight chocolate doesn’t ask permission. neither should the good things coming for you this year. unwrap them slowly, love — you’ve earned every square.',
-		},
-		{
-			text: "don't look behind you",
-			emoji: '🕯️',
-			hint: 'enter if you dare',
-			vibe: 'the dark is only jealous of your glow',
-			accent: '#7a1f2b',
-			kind: 'message',
-			title: 'a small horror, no jump scares',
-			body: 'the scariest thing in this house is how much good is waiting for you — and how you keep outrunning it. the things you survive become the things you understand.',
-		},
-		{
-			text: 'a quiet truth',
-			emoji: '🫧',
-			hint: 'for when the house is still',
-			vibe: 'folded, unsealed, yours',
-			accent: '#8a4f63',
+			text: 'a long exhale',
+			emoji: '🍵',
+			hint: 'breathe',
+			vibe: 'for the days work takes everything',
+			accent: '#33658a',
 			kind: 'quote',
-			title: 'a gentle reminder',
-			body: 'you are allowed to take up space. you always have been. even in the dark — especially there.',
+			title: 'a little peace, on tap',
+			body: 'for the days work empties your tank and you still keep going after them. this one asks for nothing back: no effort, no performing, no being \u201con\u201d. just a real exhale, and it\u2019s completely allowed.',
 		},
 		{
-			text: 'press for your wish',
+			text: 'a guaranteed laugh',
+			emoji: '🤭',
+			hint: 'doctor\u2019s orders',
+			vibe: 'medically approved silliness',
+			accent: '#c26a3a',
+			kind: 'playful',
+			title: 'a signed prescription',
+			body: 'you\u2019ve dealt with enough serious things this year. consider this a signed, official note for at least one properly silly, snort-out-loud day every single week.',
+		},
+		{
+			text: 'for the busier days',
+			emoji: '🧡',
+			hint: 'you, on the hard days',
+			vibe: 'noticed, and appreciated',
+			accent: '#8a4f63',
+			kind: 'message',
+			title: 'proof you\u2019re appreciated',
+			body: 'you make time for the people in your corner even when work has already taken most of you. that isn\u2019t small, and it\u2019s one of the best things about you: nobody in your life has to wonder where they stand.',
+		},
+		{
+			text: 'for the parts not yet shared',
+			emoji: '🔭',
+			hint: 'still undiscovered',
+			vibe: 'no rush at all',
+			accent: '#5a4f8a',
+			kind: 'visual',
+			title: 'for the undiscovered bits',
+			body: 'there\u2019s still so much of you that only comes out in time: your stories, your favourites, the completely off-duty you. and there\u2019s no rush. the slow reveal is half the charm.',
+		},
+		{
+			text: 'for the random moments',
+			emoji: '📲',
+			hint: 'for the 10pm forwards',
+			vibe: 'reels, thoughts, tiny things',
+			accent: '#2f6b5e',
+			kind: 'playful',
+			title: 'for no reason at all',
+			body: 'random things always seem to land with you: reels, tiny observations, thoughts that matter to almost nobody. you have a way of receiving small stuff that makes it feel important, and people notice that.',
+		},
+		{
+			text: 'press the star',
 			emoji: '⭐',
 			hint: 'press the star for your wish',
 			vibe: 'a tiny star, all yours',
@@ -55,37 +65,17 @@
 			kind: 'interactive',
 			title: 'your own star',
 			interactiveLabel: 'press for your wish',
-			body: 'there — it’s done. something good is already on its way this year.',
+			body: 'there, it\u2019s done. keep that one. something good is already making its way to you this year.',
 		},
 		{
-			text: 'the 3am mystery',
-			emoji: '🎁',
-			hint: 'who wrapped this at 3am?',
-			vibe: 'somebody knew you’d peek',
-			accent: '#3f4873',
-			kind: 'visual',
-			title: 'a wish for your year',
-			body: 'may this year hand you a few days you will look back on and grin about — for no reason at all. probably at 3am.',
-		},
-		{
-			text: 'a polite haunting',
-			emoji: '👻',
-			hint: 'it knocked twice. answer?',
-			vibe: 'a ghost with good manners',
-			accent: '#2f5b66',
-			kind: 'message',
-			title: 'a polite haunting',
-			body: 'there is a ghost in this house that only makes you tea and leaves the towels folded exactly right. you are the reason it learned to be gentle.',
-		},
-		{
-			text: 'rain on the window',
-			emoji: '☔',
-			hint: 'storm season, soft edition',
-			vibe: 'coffee weather at last',
-			accent: '#33507a',
+			text: 'the year ahead',
+			emoji: '🌅',
+			hint: 'all that\u2019s left for you',
+			vibe: 'for the good year coming',
+			accent: '#7a3a5e',
 			kind: 'quote',
-			title: 'coffee weather',
-			body: 'rain on the window, a warm cup in your hands, and an entire year that belongs to you. storm season has never been this soft.',
+			title: 'for the whole year ahead',
+			body: 'may this year give you fewer exhausted days, more genuinely good ones, and people who make the hard parts lighter. you\u2019ve got this one coming for you, Namita.',
 		},
 		{
 			text: 'the last bite',
@@ -95,7 +85,7 @@
 			accent: '#7a4a26',
 			kind: 'playful',
 			title: 'save the best for last',
-			body: 'they say to save the best chocolate for the end. you saved your whole year that way too — and honestly, that is the entire trick.',
+			body: 'you save the best for last, and this year is set up exactly that way: the good stuff is still on its way, and it\u2019s been saved all along for you.',
 		},
 	];
 
@@ -225,8 +215,8 @@
 
 	{#if step === 'feeling'}
 		<div class="content {introDone ? 'show' : ''}">
-			<p class="tagline">the midnight shelf</p>
-			<p class="sub">everything you find here is yours. tap one.</p>
+			<p class="tagline">a few things worth noticing</p>
+			<p class="sub">small things, wrapped up. tap one.</p>
 
 			<div class="boxes">
 				{#if placements.length}
@@ -250,7 +240,7 @@
 				{/if}
 			</div>
 
-			<button class="surprise-btn" onclick={(e) => { e.stopPropagation(); if (introDone) pickRandom(); }}><span class="sub">let fate unwrap for you</span></button>
+			<button class="surprise-btn" onclick={(e) => { e.stopPropagation(); if (introDone) pickRandom(); }}><span class="sub">surprise me</span></button>
 		</div>
 	{:else}
 		<div class="payload show">
@@ -283,7 +273,7 @@
 					<button class="go-back" onclick={reset}>← open another gift</button>
 				</div>
 
-				<p class="next-hint">ready when you are — one last thing waits ✨</p>
+				<p class="next-hint">ready when you are: one last thing waits ✨</p>
 			{:else}
 				<div class="loader"></div>
 			{/if}
