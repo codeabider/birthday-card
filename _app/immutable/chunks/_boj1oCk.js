@@ -1,0 +1,1 @@
+import{H as e}from"./CGosOI24.js";var t=e({name:`Namita`,display:`Namita`,possessive:`Namita’s`}),n=()=>{if(typeof window>`u`)return;let e=new URLSearchParams(window.location.search).get(`for`),n=e?e.trim():``;if(!n)return;let r=n===n.toLowerCase()?n.charAt(0).toUpperCase()+n.slice(1):n;t.name=r,t.display=r,t.possessive=`${r}\u2019s`};export{t as n,n as t};
