@@ -30,7 +30,7 @@
 	let liquidPct = $state('16.000vh');
 	let taglineText = $state('something warm is brewing');
 
-	function makeBurst() {
+	const makeBurst = () => {
 		const parts = [];
 		const count = 110;
 		const radius = Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.55, 580);
@@ -51,7 +51,7 @@
 		burst = parts;
 	}
 
-	function scheduleReady() {
+	const scheduleReady = () => {
 		if (unlockNotified) return;
 		unlockNotified = true;
 		unlocked = true;
@@ -66,7 +66,7 @@
 		advanceTimeout = setTimeout(() => onAutoProceed?.(), 4000);
 	}
 
-	function countUp() {
+	const countUp = () => {
 		const left = birthdayTimestamp - Date.now();
 		timeLeft = Math.max(left, 0);
 		if (left <= 0) {
@@ -91,7 +91,7 @@
 		};
 	}
 
-	function tickFill() {
+	const tickFill = () => {
 		const now = Date.now();
 		const left = Math.max(birthdayTimestamp - now, 0);
 		const span = COUNTDOWN_SPAN_MS;
@@ -113,11 +113,11 @@
 		}
 	}
 
-	function startDrain() {
+	const startDrain = () => {
 		if (typeof requestAnimationFrame !== 'function') return;
 		const t0 = performance.now();
 		const DRAIN_MS = 3600;
-		function step(now) {
+		const step = (now) => {
 			const t = Math.min((now - t0) / DRAIN_MS, 1);
 			liquidPct = `${(80 - 70 * t).toFixed(3)}vh`;
 			if (t < 1) rafId = requestAnimationFrame(step);

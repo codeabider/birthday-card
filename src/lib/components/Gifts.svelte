@@ -1,5 +1,6 @@
 <script>
 	import {onDestroy, onMount, untrack} from 'svelte';
+	import {persona} from '$lib/persona.svelte.js';
 
 	let {onProgress, initialFeeling = null, initiallyRevealed = false} = $props();
 	const feelingAtStart = untrack(() => initialFeeling);
@@ -75,7 +76,7 @@
 			accent: '#7a3a5e',
 			kind: 'quote',
 			title: 'for the whole year ahead',
-			body: 'may this year give you fewer exhausted days, more genuinely good ones, and people who make the hard parts lighter. you\u2019ve got this one coming for you, Namita.',
+			body: `may this year give you fewer exhausted days, more genuinely good ones, and people who make the hard parts lighter. you\u2019ve got this one coming for you, ${persona.display}.`,
 		},
 		{
 			text: 'the last bite',
@@ -118,7 +119,7 @@
 	let burstTimeout;
 	let introTimeout;
 
-	function burstGlow() {
+	const burstGlow = () => {
 		const particles = Array.from({length: 18}, () => ({
 			angle: Math.random() * 360,
 			dur: 0.6 + Math.random() * 0.7,
@@ -128,12 +129,12 @@
 		burstTimeout = setTimeout(() => { glowBursts = []; }, 1400);
 	}
 
-	function completeReveal() {
+	const completeReveal = () => {
 		flipped = true;
 		onProgress?.(feelingIdx, true);
 	}
 
-	function pickFeeling(idx) {
+	const pickFeeling = (idx) => {
 		revealTimers.forEach(clearTimeout);
 		feelingIdx = idx;
 		pickedFeeling = feelings[idx];
@@ -147,20 +148,20 @@
 		}
 	}
 
-	function pickRandom() {
+	const pickRandom = () => {
 		let rIdx;
 		do { rIdx = Math.floor(Math.random() * feelings.length); } while (rIdx === feelingIdx && feelings.length > 1);
 		pickFeeling(rIdx);
 	}
 
-	function pressStar() {
+	const pressStar = () => {
 		if (pressed) return;
 		pressed = true;
 		burstGlow();
 		revealTimers.push(setTimeout(completeReveal, 600));
 	}
 
-	function reset() {
+	const reset = () => {
 		revealTimers.forEach(clearTimeout);
 		step = 'feeling';
 		flipped = false;

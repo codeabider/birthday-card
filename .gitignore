@@ -12,6 +12,9 @@ node_modules
 .DS_Store
 Thumbs.db
 
+# Scratch (source images kept out of the repo)
+/_convert
+
 # Env
 .env
 .env.*

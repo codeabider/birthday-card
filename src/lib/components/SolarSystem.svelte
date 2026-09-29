@@ -35,7 +35,7 @@
 	const ORBIT_PAD = 18;
 	const bodyIds = new Set([...initialPlanets.map((planet) => planet.id), initialSun.id, initialMoon.id]);
 
-	function handleMotionPreference(event) {
+	const handleMotionPreference = (event) => {
 		prefersReducedMotion = event.matches;
 		if (prefersReducedMotion) {
 			stopLoop();
@@ -45,7 +45,7 @@
 		}
 	}
 
-	function layoutFactors() {
+	const layoutFactors = () => {
 		const viewW = window.innerWidth;
 		const viewH = window.innerHeight;
 		const sx = Math.min(Math.max((viewW / 2 - ORBIT_PAD) / ORBIT_MAX, 0.35), 1.4);
@@ -53,7 +53,7 @@
 		return {sx, sy};
 	}
 
-	function applyPositions(t) {
+	const applyPositions = (t) => {
 		const {sx, sy} = layoutFactors();
 		const earthIdx = initialPlanets.findIndex((planet) => planet.id === 'earth');
 		let earthX = 0, earthY = 0;
@@ -71,11 +71,11 @@
 		if (moonRef) moonRef.style.transform = `translate(${earthX + mx}px, ${earthY + my}px) translate(-50%, -50%)`;
 	}
 
-	function placeStatic() {
+	const placeStatic = () => {
 		applyPositions(0);
 	}
 
-	function startLoop() {
+	const startLoop = () => {
 		if (running) return;
 		running = true;
 		animStart = 0;
@@ -84,20 +84,20 @@
 		animFrame = requestAnimationFrame(animate);
 	}
 
-	function stopLoop() {
+	const stopLoop = () => {
 		running = false;
 		if (animFrame) cancelAnimationFrame(animFrame);
 		animFrame = 0;
 	}
 
-	function animate(now) {
+	const animate = (now) => {
 		if (!running || prefersReducedMotion) return;
 		if (animStart === 0) animStart = now;
 		applyPositions((now - animStart) / 1000);
 		animFrame = requestAnimationFrame(animate);
 	}
 
-	function clearCardTimers() {
+	const clearCardTimers = () => {
 		cardTimers.forEach(clearTimeout);
 		cardTimers = [];
 	}
@@ -123,7 +123,7 @@
 		stopLoop();
 	});
 
-	function handleTap(body) {
+	const handleTap = (body) => {
 		if (!body || selectedBody === body.id) return;
 		clearCardTimers();
 		selectedBody = body;
@@ -139,7 +139,7 @@
 		}, 500));
 	}
 
-	function dismiss() {
+	const dismiss = () => {
 		if (selectedBody === null) return;
 		clearCardTimers();
 		const selectedId = selectedBody.id;

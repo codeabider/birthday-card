@@ -1,6 +1,7 @@
 <script>
 	import SolarSystem from '$lib/components/SolarSystem.svelte';
 	import {getFlow} from '$lib/flow.svelte.js';
+	import {persona} from '$lib/persona.svelte.js';
 
 	const flow = getFlow();
 const planets = [
@@ -109,7 +110,7 @@ const planets = [
 		size: 40,
 		color: '#f5c97a',
 		glowColor: 'rgba(245,201,122,0.5)',
-		text: 'the centre of this whole little universe: everything else just circles you. happy birthday, Namita.',
+		text: `the centre of this whole little universe: everything else just circles you. happy birthday, ${persona.display}.`,
 	};
 	const bodyIds = new Set([...planets.map((planet) => planet.id), sun.id, moon.id]);
 	const initialExploredIds = flow.exploredBodies.filter((id) => bodyIds.has(id));

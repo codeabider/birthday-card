@@ -25,13 +25,13 @@
 	let pageHideHandler = () => shared?.pause();
 	let beforeUnloadHandler = () => shared?.pause();
 
-	function tryPlay() {
-		if (!shared) return;
+	const tryPlay = () => {
+		if (!shared || shared.ended) return;
 		const p = shared.play();
 		if (p) p.catch(() => {});
 	}
 
-	function toggle() {
+	const toggle = () => {
 		muted = !muted;
 		persistedMuted = muted;
 		if (shared) shared.muted = muted;
@@ -42,10 +42,11 @@
 		activeCount += 1;
 		if (!shared) {
 			shared = new Audio(SRC);
-			shared.loop = true;
+			shared.loop = false;
 			shared.preload = 'auto';
 			shared.volume = 0.5;
 		}
+		if (activeCount === 1) shared.currentTime = 0;
 		muted = persistedMuted;
 		shared.muted = persistedMuted;
 		window.addEventListener('pointerdown', pointerHandler);
@@ -92,7 +93,7 @@
 			<circle cx="18" cy="16" r="3" />
 		</svg>
 	{/if}
-	<span class="sr-hint">♪ happy birthday</span>
+	<span class="sr-hint">♪ Happy Birthday</span>
 </button>
 
 <style>

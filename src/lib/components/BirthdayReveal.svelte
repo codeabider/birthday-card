@@ -1,6 +1,7 @@
 <script>
 	import {onDestroy, onMount} from 'svelte';
 	import CinematicSky from '$lib/components/CinematicSky.svelte';
+	import {persona} from '$lib/persona.svelte.js';
 
 	let {onReady} = $props();
 
@@ -24,9 +25,9 @@
 	});
 
 	const titleWords = [
-		{ text: 'happy', gold: false },
-		{ text: 'birthday', gold: false },
-		{ text: 'Namita', gold: true },
+		{ text: 'Happy', gold: false },
+		{ text: 'Birthday,', gold: false },
+		{ text: persona.display, gold: true },
 	];
 
 	const wishLines = [

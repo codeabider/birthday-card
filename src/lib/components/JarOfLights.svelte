@@ -23,7 +23,7 @@
 		setTimeout(() => { phraseVisible = true; }, 300);
 	});
 
-	function tapOrb() {
+	const tapOrb = () => {
 		if (isFinishing) return;
 
 		glowBurst = 60;
@@ -42,7 +42,7 @@
 		setTimeout(() => { phraseVisible = true; }, 400);
 	}
 
-	function currentPhrase() {
+	const currentPhrase = () => {
 		const idx = currentIndex;
 		return phrases[idx] ?? '';
 	}

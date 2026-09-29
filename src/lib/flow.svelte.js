@@ -15,7 +15,7 @@ export const FLOW_ROUTES = [
 	{ id: 'final', path: '/final', label: 'Final' },
 ];
 
-export function createFlow() {
+export const createFlow = () => {
 	let completed = $state([]);
 	let exploredBodies = $state([]);
 	let choices = $state({});
@@ -25,7 +25,7 @@ export function createFlow() {
 	let wholeViewed = $state(false);
 	let restarting = $state(false);
 
-	function hydrate() {
+	const hydrate = () => {
 		if (!browser) return;
 		try {
 			const url = new URL(window.location.href);
@@ -39,16 +39,16 @@ export function createFlow() {
 		}
 	}
 
-	function markWholeViewed() {
+	const markWholeViewed = () => {
 		if (wholeViewed || restarting) return;
 		wholeViewed = true;
 	}
 
-	function onGate() {
+	const onGate = () => {
 		restarting = false;
 	}
 
-	function reset() {
+	const reset = () => {
 		restarting = true;
 		completed = [];
 		exploredBodies = [];
@@ -59,18 +59,18 @@ export function createFlow() {
 		wholeViewed = false;
 	}
 
-	function complete(id) {
+	const complete = (id) => {
 		if (!completed.includes(id)) completed = [...completed, id];
 	}
 
-	function setExploredBodies(ids) {
+	const setExploredBodies = (ids) => {
 		exploredBodies = [...new Set(ids)];
 		completed = exploredBodies.length >= 4
 			? [...new Set([...completed, 'system'])]
 			: completed.filter((id) => id !== 'system');
 	}
 
-	function setChoices(value) {
+	const setChoices = (value) => {
 		choices = { ...value };
 		const completeChoices = ['s0', 's1', 's2', 's3'].every((key) => Number.isInteger(choices[key]));
 		completed = completeChoices
@@ -78,7 +78,7 @@ export function createFlow() {
 			: completed.filter((id) => id !== 'choose');
 	}
 
-	function setGift(index, isRevealed) {
+	const setGift = (index, isRevealed) => {
 		giftIndex = Number.isInteger(index) ? index : null;
 		giftRevealed = isRevealed === true;
 		if (giftRevealed) giftEverOpened = true;
@@ -107,6 +107,6 @@ export function createFlow() {
 	};
 }
 
-export function getFlow() {
+export const getFlow = () => {
 	return getContext(FLOW_CONTEXT);
 }

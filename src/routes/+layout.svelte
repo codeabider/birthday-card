@@ -3,18 +3,25 @@
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
-	import { fade } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
+	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { createFlow, FLOW_CONTEXT, NAVIGATION_CONTEXT } from '$lib/flow.svelte.js';
+	import { persona, initPersona } from '$lib/persona.svelte.js';
 
 	let {children} = $props();
 	const flow = createFlow();
 	setContext(FLOW_CONTEXT, flow);
-	setContext(NAVIGATION_CONTEXT, { advance });
 
 	let navigating = $state(false);
-	let motionDur = $state(560);
 	let previousUserSelect = '';
+	const SLIDE_IN_MS = 680;
+	const SLIDE_OUT_MS = 360;
+	const SLIDE_IN_DELAY = 120;
+	let slide = { y: 800 };
+	const setSlide = (dir) => {
+		slide = { y: dir * (typeof window !== 'undefined' ? window.innerHeight * 1.06 : 848) };
+	};
 	let path = $derived.by(() => {
 		const trailing = page.url.pathname.replace(/\/+$/, '') || '/';
 		if (!base || base === '/') return trailing;
@@ -34,7 +41,7 @@
 	let burstId = 0;
 	let particles = $state([]);
 
-	function burstConfetti(clientX, clientY) {
+	const burstConfetti = (clientX, clientY) => {
 		const next = [];
 		for (let i = 0; i < 56; i++) {
 			const angle = (Math.PI * 2 * i) / 56 + (Math.random() - 0.5) * 0.4;
@@ -57,11 +64,11 @@
 		if (particles.length > 480) particles.splice(0, particles.length - 480);
 	}
 
-	function removeParticle(id) {
+	const removeParticle = (id) => {
 		particles = particles.filter((p) => p.id !== id);
 	}
 
-	function onPointerDown(event) {
+	const onPointerDown = (event) => {
 		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 		burstConfetti(event.clientX, event.clientY);
 	}
@@ -72,7 +79,7 @@
 	let fallers = $state([]);
 	let fallerTimer = undefined;
 
-	function spawnFaller() {
+	const spawnFaller = () => {
 		const treat = Math.random() < 0.6;
 		fallers.push({
 			id: ++fallerId,
@@ -89,14 +96,14 @@
 		if (fallers.length > 40) fallers.splice(0, fallers.length - 40);
 	}
 
-	function removeFaller(id) {
+	const removeFaller = (id) => {
 		fallers = fallers.filter((f) => f.id !== id);
 	}
 
-function scheduleFaller() {
+const scheduleFaller = () => {
 		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 		fallerTimer = setTimeout(() => {
-			if (currentRoute?.id !== 'system') spawnFaller();
+			if (currentRoute?.id !== 'system' && currentRoute?.id !== 'final') spawnFaller();
 			scheduleFaller();
 		}, 5000 + Math.random() * 3000);
 	}
@@ -110,12 +117,13 @@ function scheduleFaller() {
 	});
 
 	$effect(() => {
-		if (currentRoute?.id === 'system') fallers = [];
+		if (currentRoute?.id === 'system' || currentRoute?.id === 'final') fallers = [];
 	});
 
-	async function goBack() {
+	const goBack = async () => {
 		if (!canGoBack || !previousRoute) return;
 		navigating = true;
+		setSlide(-1);
 		try {
 			await goto(routeUrl(previousRoute.path));
 		} finally {
@@ -123,9 +131,10 @@ function scheduleFaller() {
 		}
 	}
 
-	async function goForward() {
+	const goForward = async () => {
 		if (!canGoForward || !nextRoute) return;
 		navigating = true;
+		setSlide(1);
 		try {
 			await goto(routeUrl(nextRoute.path), {replaceState: routeIndex === 0});
 		} finally {
@@ -133,10 +142,11 @@ function scheduleFaller() {
 		}
 	}
 
-	async function advance() {
+	const advance = async () => {
 		const target = nextRoute;
 		if (!target) return;
 		navigating = true;
+		setSlide(1);
 		try {
 			await goto(routeUrl(target.path));
 		} finally {
@@ -144,10 +154,12 @@ function scheduleFaller() {
 		}
 	}
 
+	setContext(NAVIGATION_CONTEXT, { advance });
+
 	onMount(() => {
+		initPersona();
 		window.addEventListener('pointerdown', onPointerDown, true);
 		scheduleFaller();
-		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) motionDur = 0;
 	});
 
 	onDestroy(() => {
@@ -169,11 +181,15 @@ function scheduleFaller() {
 
 <svelte:head>
 	<meta name="robots" content="noindex, nofollow" />
-	<title>Namita's special day</title>
+	<title>Happy Birthday, {persona.display}</title>
 </svelte:head>
 
 {#key path}
-	<div class="screen-fade" in:fade={{ duration: motionDur }} out:fade={{ duration: motionDur * 0.55 }}>
+	<div
+		class="screen-fade"
+		in:fly={{ y: slide.y, duration: SLIDE_IN_MS, delay: SLIDE_IN_DELAY, easing: cubicOut }}
+		out:fly={{ y: -slide.y, duration: SLIDE_OUT_MS, easing: cubicIn }}
+	>
 		{@render children()}
 	</div>
 {/key}
@@ -221,7 +237,7 @@ function scheduleFaller() {
 			title={canGoBack && previousRoute ? `Previous: ${previousRoute.label}` : 'Previous unavailable'}
 		>
 			<svg viewBox="0 0 24 24" aria-hidden="true">
-				<path d="M15 5 8 12l7 7" />
+				<path d="m18 15-6-6-6 6" />
 			</svg>
 		</button>
 
@@ -234,15 +250,23 @@ function scheduleFaller() {
 				aria-label={canGoForward ? `Next: ${nextRoute.label}` : `Complete ${currentRoute.label} to continue`}
 				title={canGoForward ? `Next: ${nextRoute.label}` : `Complete ${currentRoute.label} to continue`}
 			>
-				<svg viewBox="0 0 24 24" aria-hidden="true">
-					<path d="m9 5 7 7-7 7" />
-				</svg>
+<svg viewBox="0 0 24 24" aria-hidden="true">
+				<path d="m6 9 6 6 6-6" />
+			</svg>
 			</button>
 		{/if}
 	</nav>
 {/if}
 
 <style>
+	.screen-fade {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		backface-visibility: hidden;
+		will-change: transform;
+	}
+
 	.faller-layer {
 		position: fixed;
 		inset: 0;
@@ -348,6 +372,7 @@ function scheduleFaller() {
 		bottom: max(18px, env(safe-area-inset-bottom));
 		z-index: 300;
 		display: flex;
+		flex-direction: column;
 		gap: 0.65rem;
 	}
 

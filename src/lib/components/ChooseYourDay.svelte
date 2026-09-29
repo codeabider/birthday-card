@@ -74,7 +74,7 @@
 			},
 	];
 
-	function pick(i) {
+	const pick = (i) => {
 		if (fadingOut) return;
 		const key = `s${stage}`;
 		selections[key] = i;
@@ -89,20 +89,20 @@
 		}
 	}
 
-	function back() {
+	const back = () => {
 		if (fadingOut || stage === 0) return;
 		fadingOut = true;
 		transitionTimeout = setTimeout(() => { stage--; fadingOut = false; showingResult = false; }, 560);
 	}
 
-	function replan() {
+	const replan = () => {
 		if (fadingOut) return;
 		confetti = [];
 		showingResult = false;
 		stage = 0;
 	}
 
-	function fireConfetti() {
+	const fireConfetti = () => {
 		const parts = [];
 		const radius = Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.6, 620);
 		for (let i = 0; i < 70; i++) {
