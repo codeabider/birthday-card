@@ -105,7 +105,7 @@ const scheduleFaller = () => {
 		fallerTimer = setTimeout(() => {
 			if (currentRoute?.id !== 'system' && currentRoute?.id !== 'final') spawnFaller();
 			scheduleFaller();
-		}, 14000 + Math.random() * 10000);
+		}, 5000 + Math.random() * 3000);
 	}
 
 	$effect(() => {
