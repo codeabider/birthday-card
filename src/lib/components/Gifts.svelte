@@ -332,7 +332,7 @@
 	.content.show { opacity: 1; transform: translateY(0); }
 
 	.tagline {
-		font-family: 'Playfair Display', Georgia, serif; font-style: italic;
+		font-family: 'Playfair Display', Georgia, serif;
 		font-size: clamp(1.5rem, 6vw, 2.1rem); color: #f6d9ad;
 		letter-spacing: 0.02em;
 	}
@@ -454,8 +454,10 @@
 	@keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
 
 	.vibe-text {
-		font-family: 'Playfair Display', Georgia, serif; font-style: italic;
-		font-size: clamp(1rem, 4.4vw, 1.25rem); color: rgba(246,217,173,0.75);
+		font-size: 0.62rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: rgba(246,217,173,0.45);
 	}
 
 	.gift-head { min-height: 76px; display: flex; align-items: center; justify-content: center; }
@@ -499,20 +501,27 @@
 	}
 
 	.tag {
-		font-size: 0.55rem; letter-spacing: 0.24em; text-transform: uppercase;
-		color: rgba(248,232,200,0.28);
+		font-family: 'Playfair Display', Georgia, serif;
+		font-weight: 400;
+		font-size: clamp(1.5rem, 6vw, 2.1rem);
+		line-height: 1.25;
+		color: #f6d9ad;
+		letter-spacing: 0.02em;
 	}
 
 	.quote-body {
-		font-family: 'Playfair Display', Georgia, serif; font-style: italic;
-		font-size: clamp(1.15rem, 4.6vw, 1.45rem); line-height: 1.8;
+		font-family: 'Playfair Display', Georgia, serif;
+		font-style: italic;
+		font-size: clamp(1.05rem, 4vw, 1.25rem); line-height: 1.7;
 		color: rgba(246,217,173,0.9);
 		opacity: 0; animation: bodyIn 0.9s ease 0.25s forwards;
 	}
 
 	.body {
-		font-size: clamp(1rem, 4vw, 1.15rem); line-height: 1.8;
-		color: rgba(248,232,200,0.6); opacity: 0; animation: bodyIn 0.9s ease 0.25s forwards;
+		font-family: 'Playfair Display', Georgia, serif;
+		font-style: italic;
+		font-size: clamp(1.05rem, 4vw, 1.25rem); line-height: 1.7;
+		color: rgba(246,217,173,0.9); opacity: 0; animation: bodyIn 0.9s ease 0.25s forwards;
 	}
 
 	@keyframes bodyIn { to { opacity: 1; } }

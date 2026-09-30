@@ -231,6 +231,7 @@
 				</div>
 
 				<h2 class="card-title">{selectedBody.name}</h2>
+				<p class="card-kicker">a piece of you</p>
 				<p class="card-text">{selectedBody.text}</p>
 			{/if}
 
@@ -486,13 +487,24 @@
 	}
 
 	.card-title {
-		font-size: 1.8rem;
+		font-family: 'Playfair Display', Georgia, serif;
+		font-weight: 400;
+		font-size: clamp(1.5rem, 6vw, 2.1rem);
 		color: #f4d5c8;
 		text-transform: capitalize;
 	}
 
+	.card-kicker {
+		font-size: 0.62rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: rgba(240,235,227,0.32);
+	}
+
 	.card-text {
-		font-size: 1.05rem;
+		font-family: 'Playfair Display', Georgia, serif;
+		font-style: italic;
+		font-size: clamp(1.05rem, 4vw, 1.25rem);
 		line-height: 1.7;
 		color: rgba(240,235,227,0.6);
 	}
