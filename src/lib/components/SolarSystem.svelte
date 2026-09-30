@@ -502,11 +502,9 @@
 	}
 
 	.card-text {
-		font-family: 'Playfair Display', Georgia, serif;
-		font-style: italic;
-		font-size: clamp(1.05rem, 4vw, 1.25rem);
-		line-height: 1.7;
-		color: rgba(240,235,227,0.6);
+		font-size: clamp(1rem, 4.2vw, 1.2rem);
+		line-height: 1.8;
+		color: rgba(240,235,227,0.72);
 	}
 
 	.card-dismiss {

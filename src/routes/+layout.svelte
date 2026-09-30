@@ -73,7 +73,7 @@
 		burstConfetti(event.clientX, event.clientY);
 	}
 
-	const fallerEmojis = ['🎂', '🎁', '🍫', '🍬', '🧁', '🍰', '🍭', '🎉'];
+	const fallerEmojis = ['🦷', '🎂', '🎁', '🍫', '🍬', '🧁', '🍰', '🍭', '🎉'];
 	const fallerConfettiColors = ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#cc5de8', '#ff922b', '#e64980'];
 	let fallerId = 0;
 	let fallers = $state([]);
@@ -93,7 +93,7 @@
 			shape: treat ? '' : Math.random() < 0.5 ? 'circle' : 'rect',
 			emoji: treat ? fallerEmojis[(Math.random() * fallerEmojis.length) | 0] : ''
 		});
-		if (fallers.length > 40) fallers.splice(0, fallers.length - 40);
+		if (fallers.length > 18) fallers.splice(0, fallers.length - 18);
 	}
 
 	const removeFaller = (id) => {
@@ -105,7 +105,7 @@ const scheduleFaller = () => {
 		fallerTimer = setTimeout(() => {
 			if (currentRoute?.id !== 'system' && currentRoute?.id !== 'final') spawnFaller();
 			scheduleFaller();
-		}, 5000 + Math.random() * 3000);
+		}, 14000 + Math.random() * 10000);
 	}
 
 	$effect(() => {

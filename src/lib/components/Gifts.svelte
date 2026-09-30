@@ -510,18 +510,14 @@
 	}
 
 	.quote-body {
-		font-family: 'Playfair Display', Georgia, serif;
-		font-style: italic;
-		font-size: clamp(1.05rem, 4vw, 1.25rem); line-height: 1.7;
-		color: rgba(246,217,173,0.9);
+		font-size: clamp(1rem, 4.2vw, 1.2rem); line-height: 1.8;
+		color: rgba(246,217,173,0.88);
 		opacity: 0; animation: bodyIn 0.9s ease 0.25s forwards;
 	}
 
 	.body {
-		font-family: 'Playfair Display', Georgia, serif;
-		font-style: italic;
-		font-size: clamp(1.05rem, 4vw, 1.25rem); line-height: 1.7;
-		color: rgba(246,217,173,0.9); opacity: 0; animation: bodyIn 0.9s ease 0.25s forwards;
+		font-size: clamp(1rem, 4.2vw, 1.2rem); line-height: 1.8;
+		color: rgba(246,217,173,0.88); opacity: 0; animation: bodyIn 0.9s ease 0.25s forwards;
 	}
 
 	@keyframes bodyIn { to { opacity: 1; } }
