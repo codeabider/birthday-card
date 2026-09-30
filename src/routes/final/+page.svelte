@@ -30,7 +30,7 @@
 		const fallback = 'and a whole year that\u2019s kinder to you than you expect. happy birthday.';
 		if (!ready) return fallback;
 		const morning = ch.s0, next = ch.s1, afternoon = ch.s2, evening = ch.s3;
-		if (evening === 1) return 'may the mystery be fun and the answer quick, then let yourself celebrate it loudly. happy birthday.';
+		if (evening === 1) return 'may the mystery be fun and the answer quick, and may you get to celebrate it loudly. happy birthday.';
 		if (evening === 0) return 'dance like nobody\u2019s counting, and let this year keep giving you reasons to. happy birthday.';
 		if (next === 1 || afternoon === 1) return 'go take that adventure: may every small detour this year be worth it. happy birthday.';
 		if (next === 2) return 'may the nothing be luxurious and exactly what you needed. happy birthday.';

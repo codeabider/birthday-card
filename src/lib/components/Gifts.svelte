@@ -25,7 +25,7 @@
 			accent: '#c26a3a',
 			kind: 'playful',
 			title: 'a signed prescription',
-			body: 'you\u2019ve dealt with enough serious things this year. consider this a signed, official note for at least one properly silly, snort-out-loud day every single week.',
+			body: 'you have spent months telling people to relax in a chair, and you are very good at it. consider this a signed, official note for at least one properly silly, snort-out-loud day every single week. dentist\u2019s orders.',
 		},
 		{
 			text: 'for the busier days',
@@ -44,8 +44,8 @@
 			vibe: 'no rush at all',
 			accent: '#5a4f8a',
 			kind: 'visual',
-			title: 'for the undiscovered bits',
-			body: 'there\u2019s still so much of you that only comes out in time: your stories, your favourites, the completely off-duty you. and there\u2019s no rush. the slow reveal is half the charm.',
+			title: 'for the version still in draft',
+			body: 'there\u2019s a version of you that only shows up in your own time \u2014 the one who sets the hours, answers to nobody, owns the chair. and there\u2019s no rush. the slow reveal is half the charm, and it\u2019s going to be worth the wait.',
 		},
 		{
 			text: 'for the random moments',
@@ -76,7 +76,7 @@
 			accent: '#7a3a5e',
 			kind: 'quote',
 			title: 'for the whole year ahead',
-			body: `may this year give you fewer exhausted days, more genuinely good ones, and people who make the hard parts lighter. you\u2019ve got this one coming for you, ${persona.display}.`,
+			body: `may this year give you fewer exhausted days, more genuinely good ones, and an answer you\u2019re happy with \u2014 whichever way it goes. you\u2019ve got this one coming for you, ${persona.display}.`,
 		},
 		{
 			text: 'the last bite',

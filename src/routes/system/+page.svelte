@@ -14,7 +14,7 @@ const planets = [
 			color: '#9a8b7a',
 			glowColor: 'rgba(154,139,122,0.35)',
 			rings: false,
-			text: 'the messenger of this system: you collect the tiny things, the reels and stray thoughts nobody else thinks twice about, and you make them feel worth keeping.',
+			text: 'the messenger of this system: pre-auths, claim queries, the follow-ups nobody else wants to own. you are genuinely, unreasonably good at them, and there\u2019s no pretending you don\u2019t enjoy the moment a claim finally clears.',
 		},
 		{
 			id: 'venus',
@@ -25,7 +25,7 @@ const planets = [
 			color: '#e6c9a8',
 			glowColor: 'rgba(230,201,168,0.35)',
 			rings: false,
-			text: 'the brightest one here, and it isn\u2019t close: wherever you go, the space around you seems to pick up a little extra light.',
+			text: 'the brightest one here, and it isn\u2019t close: patients settle into the chair and calm down before you\u2019ve said a word. you do that without trying, which is not a small thing to be good at.',
 		},
 		{
 			id: 'earth',
@@ -71,7 +71,7 @@ const planets = [
 			color: '#e3b98f',
 			glowColor: 'rgba(227,185,143,0.35)',
 			rings: true,
-			text: 'the ringed one, still mostly unexplored: whole layers of you keep revealing themselves over time, and the best part is that they keep coming.',
+			text: 'the ringed one, still mostly unexplored: you keep working through the layers \u2014 what you love, what you tolerate, what you\u2019d actually build. the answers come late, and every one of them is worth the wait.',
 		},
 		{
 			id: 'uranus',
@@ -82,7 +82,7 @@ const planets = [
 			color: '#a7dbe0',
 			glowColor: 'rgba(167,219,224,0.35)',
 			rings: false,
-			text: 'the sideways one: you took the usual plan and gently turned it on its head. it suits you, carving your own lane like it was always meant to be yours.',
+			text: 'the sideways one: the neat plan said one thing and you did another, and it suited you. you carved this out on your own terms, which is exactly why it fits.',
 		},
 		{
 			id: 'neptune',

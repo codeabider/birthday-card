@@ -431,9 +431,12 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		justify-content: safe center;
 		gap: 1.2rem;
 		text-align: center;
 		padding: 2rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 		background:
 			radial-gradient(circle at 50% 30%, rgba(255, 180, 90, 0.25), transparent 55%),
 			radial-gradient(circle at 15% 85%, rgba(255, 90, 157, 0.28), transparent 50%),
@@ -459,7 +462,7 @@
 	.end-card::before {
 		content: '';
 		position: absolute;
-		inset: -10% -14%;
+		inset: 0;
 		border-radius: 50%;
 		background: radial-gradient(ellipse at center, rgba(12, 6, 8, 0.82), transparent 72%);
 		filter: blur(28px);

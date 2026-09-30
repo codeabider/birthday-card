@@ -439,10 +439,13 @@
 		background: rgba(10,8,18,0);
 		display: flex;
 		align-items: center;
+		align-items: safe center;
 		justify-content: center;
 		z-index: 100;
 		transition: background 0.5s ease;
 		pointer-events: none;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.card-overlay.open {
