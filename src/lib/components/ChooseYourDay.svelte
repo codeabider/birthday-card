@@ -1,6 +1,8 @@
 <script>
 	import {getContext, onDestroy, onMount, untrack} from 'svelte';
 	import {NAVIGATION_CONTEXT} from '$lib/flow.svelte.js';
+	import {card} from '$lib/config/card.svelte.js';
+	import {buildPlan} from '$lib/config/finale.svelte.js';
 
 	let {onProgress, initialChoices = {}} = $props();
 	const choicesAtStart = untrack(() => initialChoices);
@@ -22,57 +24,9 @@
 
 	const confettiPalette = ['#ff6b9d', '#ffd93d', '#6bcb77', '#4d96ff', '#a06cd5', '#ff8b3d', '#fff1d0'];
 
-	const stages = [
-		{
-			title: 'how do you want your day to begin?',
-			phase: 'morning',
-			theme: 'm',
-			choices: [
-				{icon: '☀️', text: 'Slow morning', sub: 'coffee, soft light, nobody waiting on you'},
-				{icon: '☕', text: 'Good breakfast', sub: 'fresh coffee and something chocolate-y'},
-				{icon: '🌿', text: 'Get outside', sub: 'fresh air with a thermos of cocoa'},
-				{icon: '💌', text: 'Presents in bed', sub: 'cards and gifts before the day goes anywhere'},
-				{icon: '🛌', text: 'Sleep in', sub: 'phone on silent, to-dos politely ignored'},
-			],
-		},
-		{
-			title: 'what sounds good next?',
-			phase: 'next',
-			theme: 'n',
-			choices: [
-				{icon: '🎨', text: 'Make something', sub: 'paint, bake, craft, whatever your hands want'},
-				{icon: '🗺️', text: 'Somewhere new', sub: 'a corner of the city you\u2019ve never given a real look'},
-				{icon: '🛋️', text: 'Absolutely nothing', sub: 'guilt-free, gorgeous, perfectly empty'},
-				{icon: '📚', text: 'Book & a blanket', sub: 'words, warmth, nothing to follow up on'},
-				{icon: '📸', text: 'Memory hunt', sub: 'favourite corners, candid shots, the day on film'},
-			],
-		},
-		{
-			title: 'your afternoon...',
-			phase: 'afternoon',
-			theme: 'a',
-			choices: [
-				{icon: '🍰', text: 'Treat time', sub: 'cake, chocolate and everything sweet'},
-				{icon: '🏞️', text: 'A little adventure', sub: 'explore with hot chocolate refills'},
-				{icon: '🎈', text: 'Lazy sunshine', sub: 'picnic naps and favorite people'},
-				{icon: '🍿', text: 'Cozy matinee', sub: 'blanket, snacks, a film you keep rewatching'},
-				{icon: '🧁', text: 'Bake something silly', sub: 'loud music, flour everywhere, better than store-bought'},
-			],
-		},
-{
-				title: 'your evening...',
-				phase: 'evening',
-				theme: 'e',
-				choices: [
-					{icon: '🎉', text: 'Something sparkly', sub: 'lights, music, loud happy noise'},
-					{icon: '🗝️', text: 'Mystery hour', sub: 'a puzzle, a riddle, something to solve'},
-					{icon: '🌙', text: 'Quiet & cosy', sub: 'blankets, a warm drink, slow and soft'},
-					{icon: '🌟', text: 'Dream about tomorrow', sub: 'wink at the year you\u2019re building for'},
-					{icon: '🥂', text: 'Dinner, your call', sub: 'favourite place or favourite order, no compromises'},
-					{icon: '📵', text: 'Unplug before bed', sub: 'screens off, wind down, soft and dark'},
-				],
-			},
-	];
+	const stages = $derived(card.settings.planner.stages);
+	const introCopy = $derived(card.settings.planner.intro);
+	const resultCopy = $derived(card.settings.planner.result);
 
 	const pick = (i) => {
 		if (fadingOut) return;
@@ -138,15 +92,7 @@
 	let currentStage = $derived(stages[stage]);
 	let hasSelection = $derived(selections[`s${stage}`] !== undefined);
 
-	let planText = $derived.by(() => {
-		const sel = (idx) => stages[idx].choices[selections[`s${idx}`]];
-		const parts = [];
-		for (let idx = 0; idx < stages.length; idx++) {
-			if (selections[`s${idx}`] !== undefined) parts.push(sel(idx));
-		}
-		if (parts.length !== stages.length) return '';
-		return `a ${parts[0].text} wake-up, then ${parts[1].text.toLowerCase()}, a ${parts[2].text.toLowerCase()} afternoon, ending with ${parts[3].text.toLowerCase()}.`;
-	});
+	let planText = $derived(buildPlan(stages, selections, card.settings.planner.planTemplate));
 </script>
 
 <div class="choose">
@@ -163,10 +109,10 @@
 	{#if !showingResult}
 		{#if intro}
 			<div class="content {introDone ? 'show' : ''}">
-				<p class="tag">before you begin</p>
-				<h2 class="question intro-line">okay. it's your day.</h2>
-				<p class="intro-sub">you build it: a morning, an afternoon, an evening. all yours, no wrong answers.</p>
-				<button class="start-btn" onclick={() => { intro = false; }}>start planning ✨</button>
+				<p class="tag">{introCopy.tag}</p>
+				<h2 class="question intro-line">{introCopy.question}</h2>
+				<p class="intro-sub">{introCopy.sub}</p>
+				<button class="start-btn" onclick={() => { intro = false; }}>{introCopy.start}</button>
 			</div>
 		{:else}
 			<div class="content {introDone ? 'show' : ''}" class:fadeout={fadingOut}>
@@ -212,8 +158,8 @@
 		{/if}
 	{:else}
 		<div class="result show">
-			<p class="result-kicker">all planned &heartsuit;</p>
-			<h2 class="result-title">your birthday, your way</h2>
+			<p class="result-kicker">{resultCopy.kicker}</p>
+			<h2 class="result-title">{resultCopy.title}</h2>
 
 			<div class="day-card">
 				{#each stages as s, idx}
@@ -244,14 +190,14 @@
 				<p class="plan-line">{planText}</p>
 			{/if}
 
-			<p class="wish-line">psst! I wish I could be right there with you ✨</p>
+			<p class="wish-line">{resultCopy.wish}</p>
 
 			{#if planText}
-				<button class="go-btn" onclick={() => nav?.advance?.()}>that sounds like a good day →</button>
+				<button class="go-btn" onclick={() => nav?.advance?.()}>{resultCopy.cta}</button>
 			{/if}
 
 			{#if planText}
-				<button class="replan-btn" onclick={replan}>↺ replan my day</button>
+				<button class="replan-btn" onclick={replan}>{resultCopy.replan}</button>
 			{/if}
 		</div>
 	{/if}

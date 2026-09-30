@@ -1,24 +1,26 @@
 {
-	"name": "birthday-card",
-	"private": true,
-	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"deploy": "gh-pages -d build"
-	},
-	"devDependencies": {
-		"@sveltejs/adapter-auto": "^7.0.1",
-		"@sveltejs/kit": "^2.63.0",
-		"@sveltejs/vite-plugin-svelte": "^7.1.2",
-		"gh-pages": "^6.3.0",
-		"svelte": "^5.56.1",
-		"vite": "^8.0.16"
-	},
-	"dependencies": {
-		"@sveltejs/adapter-static": "^3.0.10"
-	}
+  "name": "birthday-card",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "deploy": "gh-pages -d build",
+    "seed": "node scripts/seed_card.mjs"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^7.0.1",
+    "@sveltejs/kit": "^2.63.0",
+    "@sveltejs/vite-plugin-svelte": "^7.1.2",
+    "gh-pages": "^6.3.0",
+    "svelte": "^5.56.1",
+    "vite": "^8.0.16"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
+    "@sveltejs/adapter-static": "^3.0.10"
+  }
 }

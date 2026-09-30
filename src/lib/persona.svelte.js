@@ -15,3 +15,13 @@ export const initPersona = () => {
 	persona.display = name;
 	persona.possessive = `${name}\u2019s`;
 }
+
+// Used by the card store so a loaded card's name flows through to every
+// component that already reads `persona`.
+export const setPersonaName = (name) => {
+	const trimmed = (name || '').trim();
+	if (!trimmed) return;
+	persona.name = trimmed;
+	persona.display = trimmed;
+	persona.possessive = `${trimmed}\u2019s`;
+}

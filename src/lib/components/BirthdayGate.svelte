@@ -1,13 +1,27 @@
 <script>
 	import {onDestroy, onMount, untrack} from 'svelte';
+	import {card} from '$lib/config/card.svelte.js';
 
 	let {onReady, initiallyComplete = false, onAutoProceed} = $props();
 
-// ⚠️  Set the birthday date here (UTC). 01 Oct 2026 00:00 IST = 30 Sep 2026 18:30 UTC.
-	const birthdayTimestamp = new Date('2026-10-01T00:00:00+05:30').getTime();
-	// const birthdayTimestamp = Date.now() + 5000; // test timer — never commit! (LOCAL TEST)
-	// Cup fill span: the liquid climbs 16vh → 80vh proportionally over the last 7 days.
-	const COUNTDOWN_SPAN_MS = 7 * 864e5;
+// Local-test only: opens the gate ~5s after load so the flow can be iterated.
+// scripts/toggle_local_test.py flips this. Never ship with it on.
+	// const LOCAL_TEST_TIMER = true;
+	const LOCAL_TEST_TIMER = false;
+
+	// The birthday comes from the card config (set per card in /admin). This is
+	// just the built-in default, used when a card has no date of its own.
+	const DEFAULT_BIRTHDAY = '2026-10-01T00:00:00+05:30';
+
+	const birthdayTimestamp = $derived(
+		LOCAL_TEST_TIMER ? Date.now() + 5000 : new Date(card.birthdayAt || DEFAULT_BIRTHDAY).getTime(),
+	);
+
+	const gateCopy = $derived(card.settings.gate);
+
+	// Cup fill span: the liquid climbs 16vh → 80vh proportionally over this
+	// window before the birthday. Configurable per card (default 7 days).
+	const COUNTDOWN_SPAN_MS = $derived((Number(gateCopy.spanDays) || 7) * 864e5);
 	const completeAtStart = untrack(() => initiallyComplete);
 
 	let unlocked = $state(completeAtStart);
@@ -28,7 +42,7 @@
 	let hot = $state(false);
 	let glowDur = $state('2.00s');
 	let liquidPct = $state('16.000vh');
-	let taglineText = $state('something warm is brewing');
+	let taglineText = $state(card.settings.gate.taglines.early);
 
 	const makeBurst = () => {
 		const parts = [];
@@ -104,10 +118,10 @@
 		glowDur = `${(1.2 + 2.8 * Math.min(frac, 1)).toFixed(2)}s`;
 		taglineText =
 			left >= 864e5
-				? 'something warm is brewing'
+				? gateCopy.taglines.early
 				: left >= 36e5
-					? 'get ready'
-					: 'almost here';
+					? gateCopy.taglines.hours
+					: gateCopy.taglines.minutes;
 		if (left > 0 && !unlocked && typeof requestAnimationFrame === 'function') {
 			rafId = requestAnimationFrame(tickFill);
 		}
@@ -228,7 +242,7 @@
 	{/each}
 
 	<div class="content show">
-		<p class="tagline time-up">it's your time</p>
+		<p class="tagline time-up">{gateCopy.timeUp}</p>
 	</div>
 </div>
 {/if}

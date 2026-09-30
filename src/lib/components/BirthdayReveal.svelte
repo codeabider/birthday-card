@@ -2,6 +2,7 @@
 	import {onDestroy, onMount} from 'svelte';
 	import CinematicSky from '$lib/components/CinematicSky.svelte';
 	import {persona} from '$lib/persona.svelte.js';
+	import {card, fill} from '$lib/config/card.svelte.js';
 
 	let {onReady} = $props();
 
@@ -30,11 +31,7 @@
 		{ text: persona.display, gold: true },
 	];
 
-	const wishLines = [
-		'today is about you',
-		'and all the light you carry',
-		'into another year',
-	];
+	const wishLines = $derived(card.settings.greet.wishLines.map(fill));
 </script>
 
 <div class="reveal">

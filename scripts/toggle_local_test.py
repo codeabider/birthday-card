@@ -2,9 +2,9 @@
 """Toggle local-test-only edits between local and ship states.
 
 Three files carry changes that are ONLY meant for local development:
-  1. src/lib/components/BirthdayGate.svelte  -> test timer forces gate open in ~5s
-  2. src/routes/greet/+page.svelte           -> music is commented out
-  3. src/routes/final/+page.svelte           -> music is commented out
+  1. src/lib/components/BirthdayGate.svelte  -> LOCAL_TEST_TIMER forces the gate open in ~5s
+  2. src/routes/{greet,c/[slug]/greet}        -> music is commented out
+  3. src/routes/{final,c/[slug]/final}        -> music is commented out
 
 Usage:
     python3 scripts/toggle_local_test.py local   # enable test timer + mute music (for local dev)
@@ -21,40 +21,65 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 GATE = ROOT / "src/lib/components/BirthdayGate.svelte"
-GREET = ROOT / "src/routes/greet/+page.svelte"
-FINAL = ROOT / "src/routes/final/+page.svelte"
+SLUG = ROOT / "src/routes/c/[slug]"
+GREET_FILES = [ROOT / "src/routes/greet/+page.svelte", SLUG / "greet/+page.svelte"]
+FINAL_FILES = [ROOT / "src/routes/final/+page.svelte", SLUG / "final/+page.svelte"]
 
-REAL_DATE = "const birthdayTimestamp = new Date('2026-10-01T00:00:00+05:30').getTime();"
-TEST_TIMER = "const birthdayTimestamp = Date.now() + 5000; // test timer — never commit! (LOCAL TEST)"
+TEST_TIMER_ON = "const LOCAL_TEST_TIMER = true;"
+TEST_TIMER_OFF = "const LOCAL_TEST_TIMER = false;"
 
 MUSIC = "<BirthdayMusic />"
 MUSIC_OFF = f"<!-- {MUSIC} -->"
 
 
 def set_gate(opened):
+    """Flip the LOCAL_TEST_TIMER boolean in BirthdayGate.svelte.
+
+    Rewrites the declaration pair from scratch so it is idempotent and does not
+    depend on the file's starting state. `opened=True` means ship state (real
+    card date), so the test timer is switched off.
+    """
     p = GATE
-    text = p.read_text()
-    if opened:
-        text = re.sub(r"^(?P<ws>\s*)// (?P<real>const birthdayTimestamp = new Date\(.*getTime\(\);)$",
-                      lambda m: f"{m.group('ws')}{m.group('real')}", text, flags=re.MULTILINE)
-        text = re.sub(r"^(?P<ws>\s*)(?P<test>const birthdayTimestamp = Date\.now\(\) \+ 5000;.*)$",
-                      lambda m: f"{m.group('ws')}// {m.group('test')}", text, flags=re.MULTILINE)
-    else:
-        text = re.sub(r"^(?P<ws>\s*)(?P<real>const birthdayTimestamp = new Date\(.*getTime\(\);)$",
-                      lambda m: f"{m.group('ws')}// {m.group('real')}", text, flags=re.MULTILINE)
-        text = re.sub(r"^(?P<ws>\s*)// (?P<test>const birthdayTimestamp = Date\.now\(\) \+ 5000;.*)$",
-                      lambda m: f"{m.group('ws')}{m.group('test')}", text, flags=re.MULTILINE)
-    p.write_text(text)
+    lines = p.read_text().splitlines()
+    active = TEST_TIMER_OFF if opened else TEST_TIMER_ON
+    inactive = TEST_TIMER_ON if opened else TEST_TIMER_OFF
+    out = []
+    done = False
+    for line in lines:
+        if "const LOCAL_TEST_TIMER" in line:
+            if done:
+                continue  # collapse any stray duplicate declarations
+            out.append(f"\t// {inactive}")
+            out.append(f"\t{active}")
+            done = True
+            continue
+        out.append(line)
+    if not done:
+        sys.exit("could not find the LOCAL_TEST_TIMER declaration in BirthdayGate.svelte")
+    p.write_text("\n".join(out) + "\n")
 
 
 def set_music(on):
-    for p in (GREET, FINAL):
-        text = p.read_text()
-        if on:
-            text = text.replace(MUSIC_OFF, MUSIC)
-        else:
-            text = text.replace(MUSIC, MUSIC_OFF)
-        p.write_text(text)
+    """Rewrite the BirthdayMusic mount lines in greet + final.
+
+    Line based and idempotent: replacing the raw marker as a substring would
+    wrap an already-commented line again on every run, producing nested
+    comment markers.
+    """
+    for p in (*GREET_FILES, *FINAL_FILES):
+        lines = p.read_text().splitlines()
+        out = []
+        touched = False
+        for line in lines:
+            if "BirthdayMusic />" in line:
+                indent = line[: len(line) - len(line.lstrip())]
+                out.append(f"{indent}{MUSIC}" if on else f"{indent}{MUSIC_OFF}")
+                touched = True
+                continue
+            out.append(line)
+        if not touched:
+            sys.exit(f"no BirthdayMusic marker found in {p}")
+        p.write_text("\n".join(out) + "\n")
 
 
 def main():

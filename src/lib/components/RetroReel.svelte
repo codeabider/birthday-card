@@ -1,5 +1,6 @@
 <script>
 	import { onDestroy, onMount } from 'svelte';
+	import { card } from '$lib/config/card.svelte.js';
 
 	const DEFAULT_WISHES = [
 		'you’ve shared some parts of yourself already',
@@ -8,7 +9,7 @@
 		'and a whole year that’s kinder to you than you expect. happy birthday.',
 	];
 
-	let { name = 'you', wishes = DEFAULT_WISHES, treatLeft = '🌞', treatRight = '🧡', onReady, onFinish, onRestart } = $props();
+	let { name = 'you', wishes = DEFAULT_WISHES, treatLeft = '🌞', treatRight = '🧡', photoUrl = '', onReady, onFinish, onRestart } = $props();
 
 	const TITLE_MS = 4000;
 	const SHOT_MS = 33000;
@@ -16,12 +17,16 @@
 
 	const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 	const SONG_SRC = `${BASE}songs/retro.mp3`;
-	const CANDS = [1].map(
-		(n) => `${BASE}reel-photos/${String(n).padStart(2, '0')}.png`
+	// A card's own uploaded photo wins; otherwise fall back to the bundled
+	// static/reel-photos cutout, then to the generated placeholder scene.
+	const CANDS = $derived(
+		photoUrl ? [photoUrl] : [1].map((n) => `${BASE}reel-photos/${String(n).padStart(2, '0')}.png`)
 	);
-	const ALTS = [1].map(
-		(n) => `${BASE}reel-photos/${String(n).padStart(2, '0')}.jpg`
+	const ALTS = $derived(
+		photoUrl ? [] : [1].map((n) => `${BASE}reel-photos/${String(n).padStart(2, '0')}.jpg`)
 	);
+
+	const copy = $derived(card.settings.reel);
 
 	const EMOJIS = ['🌸', '🌺', '🌷', '🌼', '🏵️', '🌸', '🌺', '🌻'];
 	const PAL = [
@@ -277,7 +282,7 @@
 					</svg>
 				</div>
 
-				<p class="end-mark">✦ that's everything</p>
+				<p class="end-mark">{copy.endMark}</p>
 
 				{#if onRestart}
 					<button class="restart-btn" type="button" onclick={onRestart} aria-label="Start the whole experience over">↺ from the top</button>
@@ -390,16 +395,16 @@
 	{#if phase === 'boot'}
 		<button class="boot" type="button" onclick={start}>
 			<span class="btn-arrow">▶</span>
-			<span class="btn-txt">PRESS PLAY</span>
-			<span class="btn-hint">a tiny video, badly edited, with love</span>
+			<span class="btn-txt">{copy.pressPlay}</span>
+			<span class="btn-hint">{copy.bootHint}</span>
 			{#if songBroken}
-				<span class="btn-hint small">(no song file yet — clicking sfx only)</span>
+				<span class="btn-hint small">{copy.songMissing}</span>
 			{/if}
 		</button>
 	{/if}
 
 	{#if phase === 'playing' || phase === 'ending'}
-		<button class="skip" type="button" onclick={skip}>skip ▸▸</button>
+		<button class="skip" type="button" onclick={skip}>{copy.skip}</button>
 	{/if}
 </div>
 

@@ -1,11 +1,20 @@
 <script>
 	import {onDestroy, onMount, tick, untrack} from 'svelte';
+	import {card} from '$lib/config/card.svelte.js';
 
-	let {planets, moon, sun, onProgress, initialExploredIds = []} = $props();
+	let {planets, moon, sun, onProgress, initialExploredIds = [], exploreGoal = 4} = $props();
 	const initialIds = untrack(() => initialExploredIds);
 	const initialPlanets = untrack(() => planets);
 	const initialMoon = untrack(() => moon);
 	const initialSun = untrack(() => sun);
+	const cardKicker = $derived(card.settings.system.cardKicker);
+	const dismissText = $derived(card.settings.system.dismiss);
+	const hintText = $derived.by(() => {
+		const hints = card.settings.system.hints;
+		if (exploredIds.size === 0) return hints[0] ?? '';
+		if (exploredIds.size < exploreGoal) return hints[1] ?? '';
+		return hints[2] ?? '';
+	});
 	const stars = Array.from({length: 120}, (_, i) => ({
 		x: (i * 73) % 100,
 		y: (i * 37) % 100,
@@ -203,13 +212,7 @@
 	</div>
 
 	<!-- Hint text -->
-	<p class="hint" class:hide={selectedBody !== null}>
-		{exploredIds.size === 0
-			? 'tap a planet: each one knows something about you'
-			: exploredIds.size < 4
-				? 'a few more to go...'
-				: 'the system is awake!'}
-	</p>
+	<p class="hint" class:hide={selectedBody !== null}>{hintText}</p>
 
 	<!-- Planet detail card overlay -->
 	<button
@@ -231,11 +234,11 @@
 				</div>
 
 				<h2 class="card-title">{selectedBody.name}</h2>
-				<p class="card-kicker">a piece of you</p>
+				<p class="card-kicker">{cardKicker}</p>
 				<p class="card-text">{selectedBody.text}</p>
 			{/if}
 
-			<span class="card-dismiss">tap anywhere to continue ◌</span>
+			<span class="card-dismiss">{dismissText}</span>
 		</span>
 	</button>
 </div>

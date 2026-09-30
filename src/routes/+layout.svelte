@@ -22,14 +22,21 @@
 	const setSlide = (dir) => {
 		slide = { y: dir * (typeof window !== 'undefined' ? window.innerHeight * 1.06 : 848) };
 	};
-	let path = $derived.by(() => {
+	let rawPath = $derived.by(() => {
 		const trailing = page.url.pathname.replace(/\/+$/, '') || '/';
 		if (!base || base === '/') return trailing;
 		if (trailing === base) return '/';
 		if (!trailing.startsWith(base + '/')) return trailing;
 		return trailing.slice(base.length) || '/';
 	});
-	let routeUrl = (r) => (base ? base + r : r);
+	// Public cards live under /c/<slug>; the flow's own paths stay prefix-free
+	// so the same route table drives both the default card and every slug.
+	let cardPrefix = $derived.by(() => rawPath.match(/^\/c\/[^/]+/)?.[0] ?? '');
+	let path = $derived(cardPrefix && rawPath.startsWith(cardPrefix) ? rawPath.slice(cardPrefix.length) || '/' : rawPath);
+	let routeUrl = (r) => (base ? base : '') + cardPrefix + r;
+	// /admin is not part of the birthday flow: it must never redirect home and
+	// it needs real text selection for its inputs.
+	let isAdmin = $derived(path === '/admin');
 	let routeIndex = $derived(flow.routes.findIndex((route) => route.path === path));
 	let currentRoute = $derived(flow.routes[routeIndex]);
 	let previousRoute = $derived(flow.routes[routeIndex - 1]);
@@ -120,6 +127,21 @@ const scheduleFaller = () => {
 		if (currentRoute?.id === 'system' || currentRoute?.id === 'final') fallers = [];
 	});
 
+	$effect(() => {
+		if (typeof document === 'undefined') return;
+		document.body.classList.toggle('is-admin', isAdmin);
+		return () => document.body.classList.remove('is-admin');
+	});
+
+	// Switching between two public cards in one session must start fresh.
+	let lastPrefix = cardPrefix;
+	$effect(() => {
+		if (cardPrefix !== lastPrefix) {
+			lastPrefix = cardPrefix;
+			flow.reset();
+		}
+	});
+
 	const goBack = async () => {
 		if (!canGoBack || !previousRoute) return;
 		navigating = true;
@@ -169,9 +191,9 @@ const scheduleFaller = () => {
 
 	onMount(() => {
 		flow.hydrate();
-		if (routeIndex !== 0 && !flow.wholeViewed) goto(routeUrl('/'), {replaceState: true});
+		if (!isAdmin && routeIndex !== 0 && !flow.wholeViewed) goto(routeUrl('/'), {replaceState: true});
 		previousUserSelect = document.body.style.userSelect;
-		document.body.style.userSelect = 'none';
+		document.body.style.userSelect = isAdmin ? '' : 'none';
 	});
 
 	onDestroy(() => {
@@ -187,6 +209,7 @@ const scheduleFaller = () => {
 {#key path}
 	<div
 		class="screen-fade"
+		class:admin-screen={isAdmin}
 		in:fly={{ y: slide.y, duration: SLIDE_IN_MS, delay: SLIDE_IN_DELAY, easing: cubicOut }}
 		out:fly={{ y: -slide.y, duration: SLIDE_OUT_MS, easing: cubicIn }}
 	>
@@ -265,6 +288,14 @@ const scheduleFaller = () => {
 		overflow: hidden;
 		backface-visibility: hidden;
 		will-change: transform;
+	}
+
+	/* The wrapper is a clipped, viewport-sized box for the full-screen birthday
+	   screens. /admin is a long document, so it needs normal flow and no clip. */
+	.screen-fade.admin-screen {
+		position: static;
+		inset: auto;
+		overflow: visible;
 	}
 
 	.faller-layer {

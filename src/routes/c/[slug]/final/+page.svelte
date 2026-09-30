@@ -1,7 +1,7 @@
 <script>
-	import { goto } from '$app/navigation';
-	import { base } from '$app/paths';
-	import { page } from '$app/state';
+	import {goto} from '$app/navigation';
+	import {base} from '$app/paths';
+	import {page} from '$app/state';
 	import RetroReel from '$lib/components/RetroReel.svelte';
 	import BirthdayMusic from '$lib/components/BirthdayMusic.svelte';
 	import {persona} from '$lib/persona.svelte.js';
@@ -18,9 +18,8 @@
 
 	const restart = () => {
 		flow.reset();
-		const prefix = page.url.pathname.match(/^\/c\/[^/]+/)?.[0] ?? '';
-		goto(base + prefix + '/');
-	}
+		goto(`${base}/c/${page.params.slug}`);
+	};
 </script>
 
 <RetroReel

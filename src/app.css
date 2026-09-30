@@ -30,6 +30,16 @@ body {
 	height: 100%;
 }
 
+/* The birthday screens are a fixed viewport by design, so body scrolling is
+   disabled globally. /admin is an ordinary long document, so it needs the
+   normal document flow back. The class is toggled from the root layout. */
+body.is-admin {
+	position: static;
+	overflow: auto;
+	height: auto;
+	min-height: 100dvh;
+}
+
 h1, h2, h3 {
 	font-family: 'Playfair Display', Georgia, serif;
 	font-weight: 400;

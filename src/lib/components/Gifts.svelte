@@ -1,94 +1,13 @@
 <script>
 	import {onDestroy, onMount, untrack} from 'svelte';
-	import {persona} from '$lib/persona.svelte.js';
+	import {card, fill} from '$lib/config/card.svelte.js';
 
 	let {onProgress, initialFeeling = null, initiallyRevealed = false} = $props();
 	const feelingAtStart = untrack(() => initialFeeling);
 	const revealedAtStart = untrack(() => initiallyRevealed);
 
-	const feelings = [
-		{
-			text: 'a long exhale',
-			emoji: '🍵',
-			hint: 'breathe',
-			vibe: 'for the days work takes everything',
-			accent: '#33658a',
-			kind: 'quote',
-			title: 'a little peace, on tap',
-			body: 'for the days work empties your tank and you still keep going after them. this one asks for nothing back: no effort, no performing, no being \u201con\u201d. just a real exhale, and it\u2019s completely allowed.',
-		},
-		{
-			text: 'a guaranteed laugh',
-			emoji: '🤭',
-			hint: 'doctor\u2019s orders',
-			vibe: 'medically approved silliness',
-			accent: '#c26a3a',
-			kind: 'playful',
-			title: 'a signed prescription',
-			body: 'you have spent months telling people to relax in a chair, and you are very good at it. consider this a signed, official note for at least one properly silly, snort-out-loud day every single week. dentist\u2019s orders.',
-		},
-		{
-			text: 'for the busier days',
-			emoji: '🧡',
-			hint: 'you, on the hard days',
-			vibe: 'noticed, and appreciated',
-			accent: '#8a4f63',
-			kind: 'message',
-			title: 'proof you\u2019re appreciated',
-			body: 'you make time for the people in your corner even when work has already taken most of you. that isn\u2019t small, and it\u2019s one of the best things about you: nobody in your life has to wonder where they stand.',
-		},
-		{
-			text: 'for the parts not yet shared',
-			emoji: '🔭',
-			hint: 'still undiscovered',
-			vibe: 'no rush at all',
-			accent: '#5a4f8a',
-			kind: 'visual',
-			title: 'for the version still in draft',
-			body: 'there\u2019s a version of you that only shows up in your own time \u2014 the one who sets the hours, answers to nobody, owns the chair. and there\u2019s no rush. the slow reveal is half the charm, and it\u2019s going to be worth the wait.',
-		},
-		{
-			text: 'for the random moments',
-			emoji: '📲',
-			hint: 'for the 10pm forwards',
-			vibe: 'reels, thoughts, tiny things',
-			accent: '#2f6b5e',
-			kind: 'playful',
-			title: 'for no reason at all',
-			body: 'random things always seem to land with you: reels, tiny observations, thoughts that matter to almost nobody. you have a way of receiving small stuff that makes it feel important, and people notice that.',
-		},
-		{
-			text: 'press the star',
-			emoji: '⭐',
-			hint: 'press the star for your wish',
-			vibe: 'a tiny star, all yours',
-			accent: '#a8842a',
-			kind: 'interactive',
-			title: 'your own star',
-			interactiveLabel: 'press for your wish',
-			body: 'there, it\u2019s done. keep that one. something good is already making its way to you this year.',
-		},
-		{
-			text: 'the year ahead',
-			emoji: '🌅',
-			hint: 'all that\u2019s left for you',
-			vibe: 'for the good year coming',
-			accent: '#7a3a5e',
-			kind: 'quote',
-			title: 'for the whole year ahead',
-			body: `may this year give you fewer exhausted days, more genuinely good ones, and an answer you\u2019re happy with \u2014 whichever way it goes. you\u2019ve got this one coming for you, ${persona.display}.`,
-		},
-		{
-			text: 'the last bite',
-			emoji: '🍪',
-			hint: 'save the craving for last',
-			vibe: 'they saved a seat for you',
-			accent: '#7a4a26',
-			kind: 'playful',
-			title: 'save the best for last',
-			body: 'you save the best for last, and this year is set up exactly that way: the good stuff is still on its way, and it\u2019s been saved all along for you.',
-		},
-	];
+	const feelings = $derived(card.gifts.map((g) => ({ ...g, text: fill(g.text), title: fill(g.title), body: fill(g.body), vibe: fill(g.vibe), hint: fill(g.hint), interactiveLabel: fill(g.interactiveLabel), wish: fill(g.wish) })));
+	const screenCopy = $derived(card.settings.giftsScreen);
 
 	const embers = [
 		{left: '8%', rise: 140, drift: -18, edur: 9, delay: 0},
@@ -216,8 +135,8 @@
 
 	{#if step === 'feeling'}
 		<div class="content {introDone ? 'show' : ''}">
-			<p class="tagline">a few things worth noticing</p>
-			<p class="sub">small things, wrapped up. tap one.</p>
+			<p class="tagline">{screenCopy.tagline}</p>
+			<p class="sub">{screenCopy.sub}</p>
 
 			<div class="boxes">
 				{#if placements.length}
@@ -241,7 +160,7 @@
 				{/if}
 			</div>
 
-			<button class="surprise-btn" onclick={(e) => { e.stopPropagation(); if (introDone) pickRandom(); }}><span class="sub">surprise me</span></button>
+			<button class="surprise-btn" onclick={(e) => { e.stopPropagation(); if (introDone) pickRandom(); }}><span class="sub">{screenCopy.surprise}</span></button>
 		</div>
 	{:else}
 		<div class="payload show">
@@ -271,10 +190,10 @@
 				{/if}
 
 				<div class="actions">
-					<button class="go-back" onclick={reset}>← open another gift</button>
+					<button class="go-back" onclick={reset}>{screenCopy.openAnother}</button>
 				</div>
 
-				<p class="next-hint">ready when you are: one last thing waits ✨</p>
+				<p class="next-hint">{screenCopy.nextHint}</p>
 			{:else}
 				<div class="loader"></div>
 			{/if}

@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { getContext } from 'svelte';
+import { card } from '$lib/config/card.svelte.js';
 
 export const SECRET_KEY = 'birthday-preview-2026';
 
@@ -65,7 +66,9 @@ export const createFlow = () => {
 
 	const setExploredBodies = (ids) => {
 		exploredBodies = [...new Set(ids)];
-		completed = exploredBodies.length >= 4
+		// How many bodies must be tapped before the screen counts as done.
+		const goal = Number(card.settings.system.exploreGoal) || 4;
+		completed = exploredBodies.length >= goal
 			? [...new Set([...completed, 'system'])]
 			: completed.filter((id) => id !== 'system');
 	}
